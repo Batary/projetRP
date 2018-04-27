@@ -11,6 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="-print -verbose -time 10 -file ../Instances/test/example.stp" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -38,6 +39,7 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="types.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

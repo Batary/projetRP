@@ -1,76 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "types.h"
-/*
-void afficherGrille(grille g){
-	printf("\n");
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			printf("%d ",g[i][j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
 
-//pour le debug
-void afficherGrille3D(grille3D g, int val){
-	printf("\n");
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			printf("%d ",g[i][j][val]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
+graphe* lireFichier(const String fichier)
+{
+    graphe* g;
+    g = (graphe*)calloc(1,sizeof(graphe));
+    int  ret, val, val2, val3, ac = 0, tc = 0;
+    char line[50];
+    FILE *f = NULL;
+    if ((f = fopen(fichier, "r")) == NULL) return NULL; // fichier mal lu
+    while((ret = fscanf (f,"%s", line)) != EOF && ret == 1)
+    {
+        printf("%s ", line);
 
-//lecture du fichier contenant les grilles
-grille* lireGrille(const String fichier, int* nbGrilles){
-	grille* tabGrilles;
-	tabGrilles = (grille*)malloc(MAXGRILLES * sizeof(grille));
-
-	FILE *f;
-	int idGrille = 0, i = 0, j = 0;
-
-	if ((f = fopen(fichier, "r")) == NULL) return NULL; // fichier mal lu
-
-	while(!feof(f) && (fscanf(f, "%1d", &tabGrilles[idGrille][i][j]) == 1)){
-		j++;
-		if(j >= 9){
-			j = 0;
-			i++;
-		}
-		if(i >= 9){
-			i = 0;
-			j = 0;
-			idGrille++;
-		}
-
-	}
-	fclose(f);
-
-	*nbGrilles = idGrille;
-
-	return tabGrilles;
-}
-
-//ecriture des grilles dans le fichier texte
-int ecrireGrilles(const String fichier, grille* grilles, int nbGrilles){
-	FILE *f;
-	if ((f = fopen(fichier, "w")) == NULL) { //fichier inaccessible
-		return -1;
-	}
-	for (int g = 0; g < nbGrilles; g++) {
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-				fprintf(f,"%d",grilles[g][i][j]);
+		//creation des noeuds
+        if(!strcmp(line,"Nodes") && fscanf(f, "%d", &val) == 1){
+			printf("%d ", val);
+			g->nbNoeuds = val;
+			g->noeuds = (noeud*)calloc(val,sizeof(noeud));
+			for(int i = 0; i<val; i++){
+				g->noeuds[i].id = i;
+				g->noeuds[i].est_terminal = 0;
 			}
-		}
-		fprintf(f,"\n");
-	}
+        }
 
-	return 0;
+        //creation des aretes
+        else if(!strcmp(line,"Edges") && fscanf(f, "%d", &val) == 1){
+			printf("%d ", val);
+			g->nbAretes = val;
+			g->aretes = (arete*)calloc(val,sizeof(arete));
+        }
+
+        //lecture de la valeur des aretes
+        else if(!strcmp(line,"E") && fscanf(f, "%d %d %d", &val, &val2, &val3) == 3){
+			//noeud1, noeud2, poids
+			printf("%d %d %d", val, val2, val3);
+			g->aretes[ac].noeud1 = &g->noeuds[val];
+			g->aretes[ac].noeud2 = &g->noeuds[val2];
+			g->aretes[ac].poids = val3;
+
+			g->noeuds[val].nbAretes++;
+			//TODO : associer les aretes aux noeuds -> tableau a realloc a chaque fois
+			g->noeuds[val].aretes = (arete*)realloc(g->noeuds[val].aretes, g->noeuds[val].nbAretes * sizeof(arete));
+			g->noeuds[val].aretes[g->noeuds[val].nbAretes - 1] = g->aretes[ac];
+
+			ac++;
+        }
+
+        //ajout des noeuds terminaux
+        else if(!strcmp(line,"Terminals") && fscanf(f, "%d", &val) == 1){
+			printf("%d ", val);
+			g->nbTerminaux = val;
+			g->terminaux = (noeud**)calloc(val, sizeof(noeud*));
+        }
+
+        //lecture de la valeur des noeuds terminaux
+        else if(!strcmp(line,"T") && fscanf(f, "%d", &val) == 1){
+			printf("%d ", val);
+			g->noeuds[val].est_terminal = 1;
+			g->terminaux[tc] = &g->noeuds[val];
+			tc++;
+        }
+
+        puts("");
+    }
+    fclose(f);
+    return g;
 }
-*/

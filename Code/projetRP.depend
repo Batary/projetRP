@@ -1,7 +1,11 @@
 # depslib dependency file v1.0
-1524659182 source:/home/baptiste/Documents/C/projetRP/Code/main.c
+1524848909 source:/home/baptiste/Documents/C/projetRP/Code/main.c
 	<stdio.h>
 	<stdlib.h>
+	<string.h>
+	<time.h>
+	"inout.h"
+	"types.h"
 
 1524671722 source:/home/baptiste/Documents/Travail/projetRP/Code/inout.c
 	<stdio.h>
@@ -19,5 +23,16 @@
 	"types.h"
 
 1524665746 /home/baptiste/Documents/Travail/projetRP/Code/inout.h
+	"types.h"
+
+1524849093 source:/home/baptiste/Documents/C/projetRP/Code/inout.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"types.h"
+
+1524852890 /home/baptiste/Documents/C/projetRP/Code/types.h
+
+1524850035 /home/baptiste/Documents/C/projetRP/Code/inout.h
 	"types.h"
 

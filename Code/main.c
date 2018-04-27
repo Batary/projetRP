@@ -57,6 +57,12 @@ int main(int argc, const char *argv[])
     if(t == -1) time = -1;
     else time = (double)t;	//Comptage en secondes
 
+    graphe* g = lireFichier(source);
+    if(g == NULL){
+		puts("Fichier non trouve ou fichier vide. \n");
+		return EXIT_FAILURE;
+    }
+
 //Code commenté extrait d'un solveur de sudoku que j'ai fait l'annee derniere, qu'on pourra reutiliser
 
     /*
