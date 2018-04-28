@@ -7,22 +7,24 @@
 	"inout.h"
 	"types.h"
 
-1524671722 source:/home/baptiste/Documents/Travail/projetRP/Code/inout.c
+1524926284 source:/home/baptiste/Documents/Travail/projetRP/Code/inout.c
 	<stdio.h>
 	<stdlib.h>
+	<string.h>
 	"types.h"
 
-1524671681 /home/baptiste/Documents/Travail/projetRP/Code/types.h
+1524929244 /home/baptiste/Documents/Travail/projetRP/Code/types.h
 
-1524687512 source:/home/baptiste/Documents/Travail/projetRP/Code/main.c
+1524927178 source:/home/baptiste/Documents/Travail/projetRP/Code/main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<time.h>
 	"inout.h"
+	"graphe.h"
 	"types.h"
 
-1524665746 /home/baptiste/Documents/Travail/projetRP/Code/inout.h
+1524926167 /home/baptiste/Documents/Travail/projetRP/Code/inout.h
 	"types.h"
 
 1524849093 source:/home/baptiste/Documents/C/projetRP/Code/inout.c
@@ -34,5 +36,13 @@
 1524852890 /home/baptiste/Documents/C/projetRP/Code/types.h
 
 1524850035 /home/baptiste/Documents/C/projetRP/Code/inout.h
+	"types.h"
+
+1524928726 source:/home/baptiste/Documents/Travail/projetRP/Code/graphe.c
+	<stdio.h>
+	<stdlib.h>
+	"types.h"
+
+1524921539 /home/baptiste/Documents/Travail/projetRP/Code/graphe.h
 	"types.h"
 

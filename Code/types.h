@@ -11,8 +11,8 @@ typedef struct {
 	int id;
 	int est_terminal;
 	int nbAretes;
-	arete* aretes; //non implemente, realoc necessaire.
-	//on peut eventuellement ajouter ici les noeuds connectes si besoin
+	arete* aretes;
+	//on peut eventuellement ajouter ici les noeuds connectes si besoin (meme si on peut y acceder indirectement)
 } noeud;
 
 typedef struct _arete{
@@ -26,12 +26,13 @@ typedef struct{
 	int nbNoeuds;
 	int nbAretes;
 	int nbTerminaux;
+	int nbNonTerminaux;
 
 	// listes d'elements que l'on pourra parcourir
 	noeud* noeuds;
 	// la liste de noeuds terminaux pointe sur la liste de noeuds ci dessus
 	noeud** terminaux;
-	// on pourrait ajouter ici les noeuds non terminaux
+	noeud** nonTerminaux;
 
 	arete* aretes;
 

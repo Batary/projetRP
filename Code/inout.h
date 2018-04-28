@@ -2,7 +2,7 @@
 #define INOUT_H_
 #include "types.h"
 
-graphe* lireFichier(const String fichier);
+graphe* lireFichier(const String fichier, const int verbose);
 
 
 #endif /* INOUT_H_ */

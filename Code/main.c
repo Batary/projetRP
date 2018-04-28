@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "inout.h"
+#include "graphe.h"
 #include "types.h"
 
 #define OUT "../Output/"
@@ -16,6 +17,8 @@ Options actuellement disponibles :
 -time <X> : limite le temps a X secondes par instance (5 min = 300 sec)
 -file <source_file> : le nom du fichier d'entree a ouvrir
 -out <dest_file> : le fichier de sortie, par défaut, ../Output/ ( + <nomfichier>.out )
+-gene : algo genetique seul
+-local : algo de recherche locale seul
 **/
 
 int main(int argc, const char *argv[])
@@ -24,11 +27,8 @@ int main(int argc, const char *argv[])
     puts("Demarrage du programme. \n");
 
     double time = 0;
-    int verbose = 0, print = 0, t=-1;					//options de lancement
+    int verbose = 0, print = 0, t = -1, gene = 1, local = 1;			//options de lancement
     String source = NULL, dest = OUT;
-
-    clock_t begin = clock(), current = clock();
-    double time_spent, lastTime;
 
     //lecture des parametres
     char *ptr;
@@ -45,6 +45,8 @@ int main(int argc, const char *argv[])
 			dest = (String)malloc((strlen(argv[i+1]) + 1) * sizeof(char));
             strcpy(dest, argv[i+1]);
         }
+        if(!strcmp(argv[i], "-gene")) local = 0;
+        if(!strcmp(argv[i], "-local")) gene = 0;
     }
 
     if(!source)
@@ -53,54 +55,48 @@ int main(int argc, const char *argv[])
         return EXIT_FAILURE;
     }
 
-    printf("Arguments : print = %d, verbose = %d, time = %d, file = %s, out = %s\n",print,verbose,t,source,dest);
+    printf("Arguments : print = %d, verbose = %d, time = %d, file = %s, out = %s, local = %d, gene = %d\n", print, verbose, t, source, dest, local, gene);
     if(t == -1) time = -1;
     else time = (double)t;	//Comptage en secondes
 
-    graphe* g = lireFichier(source);
+	//lecture du fichier graphe
+    graphe* g = lireFichier(source, verbose);
     if(g == NULL){
 		puts("Fichier non trouve ou fichier vide. \n");
 		return EXIT_FAILURE;
     }
 
+    clock_t current = clock();
+    double time_spent = time;
+    //int* solution;
+
+	if(local){
+		if(print) puts("Demarrage de l'algorithme de recherche locale.");
+
+		noeuds_steiner_local(g, time, verbose);
+
+		if(print){
+
+		}
+		//TODO : write solution on disk
+
+		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
+		if(print) printf("Recherche locale terminee en %f sec.\n", time_spent);
+	}
+
+	if(gene){
+		current = clock();
+		if(print) puts("Demarrage de l'algorithme genetique.");
+
+		noeuds_steiner_gene(g, (int)time_spent + 1, verbose);
+
+		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
+		if(print) printf("Algorithme genetique termine en %f sec.\n", time_spent);
+	}
+
 //Code commenté extrait d'un solveur de sudoku que j'ai fait l'annee derniere, qu'on pourra reutiliser
 
     /*
-    	grille* grilles = lireGrille(SOURCE, &nbGrilles);
-
-    	if(grilles == NULL || nbGrilles == 0){
-    		puts("Fichier non trouve ou fichier vide. \n");
-    		return EXIT_FAILURE;
-    	}
-    	int i; double execTime;
-    	for (i = 0; i < nbGrilles; i++) {
-    		if(print) printf("Grille %d : \n", i + 1);
-    		if(print) afficherGrille(grilles[i]);
-    		lastTime = time;
-
-    		execTime = resoudre(grilles[i], &time, verbose);
-
-    		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
-    		current = clock();
-    		if(time != -1){time = lastTime - time_spent;}
-
-    		if((execTime == -1 || time <= 0) && time != -1){		//temps écoulé
-    			if(print)printf("Temps ecoule ! Arret du programme.\n");
-    			break;
-    		}
-    		else{
-    			printf("Temps d'execution (grille %d) : %f ms.\n", i+1, time_spent*1000);
-    		}
-    		if(print){
-    			printf("Grille %d resolue : \n", i + 1);
-    			afficherGrille(grilles[i]);
-    		}
-    	}
-
-    	time_spent = (double)(clock() - begin) / CLOCKS_PER_SEC;
-    	printf("Temps total : %f ms.\n", time_spent*1000);
-    	if(print && time > 0)printf("Temps restant : %f ms.\n", time*1000);
-
     	if(ecrireGrilles(DEST, grilles, i) == -1){
     		printf("ERREUR ! Impossible d'ecrire dans le fichier \"%s\" ! \n", DEST);
     		return EXIT_FAILURE;
