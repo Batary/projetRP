@@ -3,18 +3,20 @@
 
 #include "types.h"
 
-//algo genetique
-int* noeuds_steiner_gene(graphe* g, int time, int verbose){
-	//TODO : retravailler le retour (aretes + valeur de la solution)
+/*
+	NOTE : tous les indices sont decales de -1 par rapport au fichier d'entree.
+*/
 
+///algo genetique
+void noeuds_steiner_gene(graphe* g, const int time, const int verbose, int* valeurSolution, int* nbAretes, arete* aretes){
+	//representation des individus
 
-	//declaration du tableau solution
 
 	//TODO...
 }
 
-//algo de recherche locale
-int* noeuds_steiner_local(graphe* g, int time, int verbose){
+///algo de recherche locale
+void noeuds_steiner_local(graphe* g,const int time,const int verbose, int* valeurSolution, int* nbAretes, arete* aretes){
 
 	//TODO...
 }

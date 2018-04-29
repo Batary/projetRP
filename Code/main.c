@@ -55,7 +55,7 @@ int main(int argc, const char *argv[])
         return EXIT_FAILURE;
     }
 
-    printf("Arguments : print = %d, verbose = %d, time = %d, file = %s, out = %s, local = %d, gene = %d\n", print, verbose, t, source, dest, local, gene);
+    if(verbose) printf("Arguments : print = %d, verbose = %d, time = %d, file = %s, out = %s, local = %d, gene = %d\n", print, verbose, t, source, dest, local, gene);
     if(t == -1) time = -1;
     else time = (double)t;	//Comptage en secondes
 
@@ -68,30 +68,42 @@ int main(int argc, const char *argv[])
 
     clock_t current = clock();
     double time_spent = time;
-    //int* solution;
+    int coutSolution, nbAretes;
+    arete* solution;
 
 	if(local){
 		if(print) puts("Demarrage de l'algorithme de recherche locale.");
 
-		noeuds_steiner_local(g, time, verbose);
+		noeuds_steiner_local(g, time, verbose, &coutSolution, &nbAretes, solution);
 
+		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
 		if(print){
-
+			printf("Recherche locale terminee en %f sec.\n", time_spent);
+			printf("\nSolution trouvee de valeur %d. Affichage des aretes solution :\n", coutSolution);
+			for(int i = 0; i<nbAretes; i++){
+				printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
+			}
+			puts("");
 		}
 		//TODO : write solution on disk
 
-		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
-		if(print) printf("Recherche locale terminee en %f sec.\n", time_spent);
 	}
 
 	if(gene){
 		current = clock();
 		if(print) puts("Demarrage de l'algorithme genetique.");
 
-		noeuds_steiner_gene(g, (int)time_spent + 1, verbose);
+		noeuds_steiner_gene(g, (int)time_spent + 1, verbose, &coutSolution, &nbAretes, solution);
 
 		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
-		if(print) printf("Algorithme genetique termine en %f sec.\n", time_spent);
+		if(print){
+			printf("Algorithme genetique termine en %f sec.\n", time_spent);
+			printf("\nSolution trouvee de valeur %d. Affichage des aretes solution :\n", coutSolution);
+			for(int i = 0; i<nbAretes; i++){
+				printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
+			}
+			puts("");
+		}
 	}
 
 //Code commenté extrait d'un solveur de sudoku que j'ai fait l'annee derniere, qu'on pourra reutiliser

@@ -32,6 +32,10 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="graphe.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="graphe.h" />
 		<Unit filename="inout.c">
 			<Option compilerVar="CC" />
 		</Unit>

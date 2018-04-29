@@ -4,6 +4,38 @@
 
 #include "types.h"
 
+//une implementation du quicksort pour le tri des aretes, adaptee de wikipedia
+int partitionner(arete* tableau, int p, int r) {
+    int pivot = tableau[p].poids, i = p-1, j = r+1;
+    arete temp;
+    while (1) {
+        do
+            j--;
+        while (tableau[j].poids > pivot);
+        do
+            i++;
+        while (tableau[i].poids < pivot);
+        if (i < j) {
+            temp = tableau[i];
+            tableau[i] = tableau[j];
+            tableau[j] = temp;
+        }
+        else
+            return j;
+    }
+}
+
+void quickSort(arete* tableau, int p, int r) {
+    int q;
+    if (p < r) {
+        q = partitionner(tableau, p, r);
+        quickSort(tableau, p, q);
+        quickSort(tableau, q+1, r);
+    }
+}
+
+///lit le fichier contenant le graphe
+///on suppose ici que le fichier est bien formé
 graphe* lireFichier(const String fichier, const int verbose)
 {
     graphe* g;
@@ -12,6 +44,9 @@ graphe* lireFichier(const String fichier, const int verbose)
     char line[50];
     FILE *f = NULL;
     if ((f = fopen(fichier, "r")) == NULL) return NULL; // fichier mal lu
+
+    if(verbose) puts("");
+
     while((ret = fscanf (f,"%s", line)) != EOF && ret == 1)
     {
         if(verbose) printf("%s ", line);
@@ -38,12 +73,13 @@ graphe* lireFichier(const String fichier, const int verbose)
         else if(!strcmp(line,"E") && fscanf(f, "%d %d %d", &val, &val2, &val3) == 3){
 			//noeud1, noeud2, poids
 			if(verbose) printf("%d %d %d", val, val2, val3);
+			val--; val2--;
 			g->aretes[ac].noeud1 = &g->noeuds[val];
 			g->aretes[ac].noeud2 = &g->noeuds[val2];
 			g->aretes[ac].poids = val3;
 
 			g->noeuds[val].nbAretes++;
-			//TODO : associer les aretes aux noeuds -> tableau a realloc a chaque fois
+			//associer les aretes aux noeuds -> tableau a realloc a chaque fois
 			g->noeuds[val].aretes = (arete*)realloc(g->noeuds[val].aretes, g->noeuds[val].nbAretes * sizeof(arete));
 			g->noeuds[val].aretes[g->noeuds[val].nbAretes - 1] = g->aretes[ac];
 
@@ -63,6 +99,7 @@ graphe* lireFichier(const String fichier, const int verbose)
         //lecture de la valeur des noeuds terminaux
         else if(!strcmp(line,"T") && fscanf(f, "%d", &val) == 1){
 			if(verbose) printf("%d ", val);
+			val--;
 			g->noeuds[val].est_terminal = 1;
 			g->terminaux[tc] = &g->noeuds[val];
 			tc++;
@@ -80,6 +117,29 @@ graphe* lireFichier(const String fichier, const int verbose)
 		}
     }
 
+    //tri des aretes par poids croissant pour preparer l'algorithme de Kruskal
+    /*
+    for(int i = 0; i<g->nbAretes; i++){
+		printf("%d %d %d\n", g->aretes[i].noeud1->id, g->aretes[i].noeud2->id, g->aretes[i].poids);
+    }
+    */
+	quickSort(g->aretes, 0, g->nbAretes - 1);
+	if(verbose){
+		puts("\nAffichage des aretes triees (avec ajustement de l'index) :");
+		for(int i = 0; i<g->nbAretes; i++){
+			printf("%d %d %d\n", g->aretes[i].noeud1->id, g->aretes[i].noeud2->id, g->aretes[i].poids);
+		}
+		puts("");
+    }
+
+
     fclose(f);
     return g;
 }
+
+//NOTE : tous les indices sont decales de -1 par rapport au fichier d'entree.
+//A ne pas oublier a la sortie.
+
+
+
+
