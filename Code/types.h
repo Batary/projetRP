@@ -38,4 +38,10 @@ typedef struct{
 
 } graphe;
 
+/*
+typedef struct{
+	int parent;
+	int rang;
+}set_aretes;
+*/
 #endif /* TYPES_H_ */

@@ -4,35 +4,7 @@
 
 #include "types.h"
 
-//une implementation du quicksort pour le tri des aretes, adaptee de wikipedia
-int partitionner(arete* tableau, int p, int r) {
-    int pivot = tableau[p].poids, i = p-1, j = r+1;
-    arete temp;
-    while (1) {
-        do
-            j--;
-        while (tableau[j].poids > pivot);
-        do
-            i++;
-        while (tableau[i].poids < pivot);
-        if (i < j) {
-            temp = tableau[i];
-            tableau[i] = tableau[j];
-            tableau[j] = temp;
-        }
-        else
-            return j;
-    }
-}
 
-void quickSort(arete* tableau, int p, int r) {
-    int q;
-    if (p < r) {
-        q = partitionner(tableau, p, r);
-        quickSort(tableau, p, q);
-        quickSort(tableau, q+1, r);
-    }
-}
 
 ///lit le fichier contenant le graphe
 ///on suppose ici que le fichier est bien formé
@@ -123,6 +95,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 		printf("%d %d %d\n", g->aretes[i].noeud1->id, g->aretes[i].noeud2->id, g->aretes[i].poids);
     }
     */
+    /*
 	quickSort(g->aretes, 0, g->nbAretes - 1);
 	if(verbose){
 		puts("\nAffichage des aretes triees (avec ajustement de l'index) :");
@@ -131,7 +104,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 		}
 		puts("");
     }
-
+	*/
 
     fclose(f);
     return g;
