@@ -1,7 +1,7 @@
 SECTION Graph
 Nodes 5
 Edges 6
-E 1 2 1
+E 1 2 10
 E 1 4 3
 E 3 2 3
 E 2 4 4

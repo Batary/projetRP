@@ -1,12 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
 
 #include "types.h"
+
+#define TAILLE_POPULATION 100
+#define CHANCE_MUTATION 0.02
 
 /*
 	NOTE : tous les indices sont decales de -1 par rapport au fichier d'entree.
 */
+
+double generer_uniforme(double x, double y){
+	return ( rand()/(double)RAND_MAX ) * (y-x) + x;
+}
 
 ///trouve le parent (= l'id de l'ensemble qui le contient) d'un element
 int trouverParent(const int x, int* parents){
@@ -66,6 +74,7 @@ int evaluerSolution(graphe* g, int* solution,
 						/*constantes et tableaux conteneurs :*/ const int M, int* parents, int* rangs, arete* aretesTab,
 						/*sorties :*/ arete* aretesSol, int* nbAretesSol)
 {
+
 	int valeurSol = 0;
 	*nbAretesSol = 0; //nombre d'aretes du sous-graphe, doit etre egal au nombre de sommets - 1
 
@@ -90,6 +99,14 @@ int evaluerSolution(graphe* g, int* solution,
 
 	quickSort(aretesTab, 0, na - 1);
 
+
+	for(int i = 0; i < na; i++){
+		printf("%d %d\n", aretesTab[i].noeud1->id, aretesTab[i].noeud2->id);
+	}
+getchar();
+//TODO : retirer les doublons ou changer le tri des aretes
+
+
 	int k = 0;
 	//parcours des aretes
 	while( k < na && *nbAretesSol < nbNoeudsSol - 1 ){
@@ -109,30 +126,32 @@ int evaluerSolution(graphe* g, int* solution,
 }
 
 ///algo genetique
-void noeuds_steiner_gene(graphe* g, const int time, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
+void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
 {
+
+	srand(time(NULL));
+	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
 	*nbAretes = 0;
 	int sol = 0;	//solution actuelle
 	int nbAretesSol;
 	int M = 0;		//majorant du cout d'une solution
 
-	//representation des individus
-	int* sommets;			//sans les sommets terminaux
-	sommets = (int*) calloc(g->nbNonTerminaux, sizeof(int));
-	int* solutionActuelle;	//avec les sommets terminaux
+	//representation des individus avec les sommets terminaux
+	int* solutionActuelle;
 	solutionActuelle = (int*) calloc(g->nbNoeuds, sizeof(int));
 
 	for(int i = 0; i < g->nbTerminaux; i++){
 		solutionActuelle[g->terminaux[i]->id] = 1;
 	}
 
-
-	//declaration des tableaux de parents et de rangs (pour la detection de cycle)
+	//declaration des tableaux de parents et de rangs ( -> pour la detection de cycle)
 	int* parents;
 	int* rangs;
 	parents = (int*) calloc(g->nbNoeuds, sizeof(int));
 	rangs = (int*) calloc(g->nbNoeuds, sizeof(int));
+	int* solutions;
+	solutions = (int*) calloc(TAILLE_POPULATION, sizeof(int));
 	arete* aretesSol;
 	arete* aretesTab;
 	aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
@@ -143,42 +162,102 @@ void noeuds_steiner_gene(graphe* g, const int time, const int verbose, /*sorties
 		M += g->aretes[i].poids;
 	}
 
-
-
-	//while()...
-
-	//TODO : calcul nouvelle solution
-
-
-
-	//affichage des sommets actuellement inclus dans la solution
-	puts("Sommets :");
-	for(int i = 0; i < g->nbNonTerminaux; i++){
-		//test
-		//sommets[i] = 1;
-
-		printf("%d:%d ", g->nonTerminaux[i]->id, sommets[i]);
-	}
-	//sommets[0] = 1;
-	puts("");
-
-	//creation d'un tableau de solutions comprenant les sommets terminaux
-	for(int i = 0; i < g->nbNonTerminaux; i++){
-		solutionActuelle[g->nonTerminaux[i]->id] = sommets[i];
-	}
-
-	sol = evaluerSolution(g, solutionActuelle, M, parents, rangs, aretesTab, aretesSol, &nbAretesSol);
-
-	//amelioration trouvee
-	if(sol < *valeurSolution){
-		if(verbose) printf("Amelioration trouvee de valeur %d.\n", sol);
-		*valeurSolution = sol;
-		*nbAretes = nbAretesSol;
-		for(int i = 0; i < nbAretesSol; i++){
-			aretes[i] = aretesSol[i];
+	if(verbose) printf("Generation d'une population de taille %d.\n", TAILLE_POPULATION);
+	//generation de la population
+	int** population;
+	int** populationEnfants;
+	population = (int**) calloc(TAILLE_POPULATION, sizeof(int*));
+	populationEnfants = (int**) calloc(TAILLE_POPULATION, sizeof(int*));
+	for(int i = 0; i < TAILLE_POPULATION; i++){
+		population[i] = (int*) calloc(g->nbNonTerminaux, sizeof(int));
+		populationEnfants[i] = (int*) calloc(g->nbNonTerminaux, sizeof(int));
+		double p = generer_uniforme(0.2,0.5);
+		for(int j = 0; j < g->nbNonTerminaux; j++){
+			population[i][j] = generer_uniforme(0, 1) > p;
+			//printf("%d ", population[i][j]);
 		}
+		//puts("");
 	}
 
+
+	int gen = 0;
+	do{
+
+		/*
+		//affichage des sommets actuellement inclus dans la solution
+		puts("Sommets :");
+		for(int i = 0; i < g->nbNonTerminaux; i++){
+			//test
+			sommets[i] = 1;
+
+			printf("%d:%d ", g->nonTerminaux[i]->id, sommets[i]);
+		}
+		//sommets[0] = 1;
+		puts("");
+		*/
+
+
+		for(int i = 0; i < TAILLE_POPULATION; i++){
+			//creation d'un tableau de solutions comprenant les sommets terminaux
+			for(int j = 0; j < g->nbNonTerminaux; j++){
+				solutionActuelle[g->nonTerminaux[j]->id] = population[i][j];
+
+
+				sol = evaluerSolution(g, solutionActuelle, M, parents, rangs, aretesTab, aretesSol, &nbAretesSol);
+				solutions[i] = sol;
+
+				//amelioration trouvee
+				if(sol < *valeurSolution){
+					if(verbose) printf("Amelioration trouvee de valeur %d (generation %d).\n", sol, gen);
+					*valeurSolution = sol;
+					*nbAretes = nbAretesSol;
+					for(int k = 0; k < nbAretesSol; k++){
+						aretes[k] = aretesSol[k];
+					}
+				}
+			}
+		}
+
+		//calcul nouvelle solution
+
+		for(int i = 0; i < TAILLE_POPULATION; i++){
+			//selection de deux individus
+			//on prend un individu au hasard, puis on determine s'il est selectionne en fonction de la valeur de sa solution
+			int parent1 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			while( solutions[parent1] / (double)(*valeurSolution) < generer_uniforme(0, 1)){
+				parent1 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			}
+
+			int parent2 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			while( solutions[parent2] / (double)(*valeurSolution) < generer_uniforme(0, 1)){
+				parent2 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			}
+
+			int p = (int)generer_uniforme(0, g->nbNonTerminaux);
+			//croisement des deux parents
+			for(int j = 0; j < p; j++){
+				populationEnfants[i][j] = population[parent1][j];
+				//printf("%d ", populationEnfants[i][j]);
+				//printf("%d ", population[parent1][j]);
+			}
+			for(int j = p; j < g->nbNonTerminaux; j++){
+				//printf("%d ", population[parent2][j]);
+				populationEnfants[i][j] = population[parent2][j];
+			}
+			if( CHANCE_MUTATION >= generer_uniforme(0, 1)){
+				int r = (int)generer_uniforme(0, TAILLE_POPULATION);
+				populationEnfants[i][r] = !populationEnfants[i][r];
+			}
+		}
+
+		//remplacement des parents par les enfants
+		for(int i = 0; i < TAILLE_POPULATION; i++){
+			population[i] = populationEnfants[i];
+		}
+
+		gen++;
+
+	}while((clock() - debut) / (double)CLOCKS_PER_SEC < (double)maxTime);
 }
 
 ///algo de recherche locale

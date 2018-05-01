@@ -70,6 +70,7 @@ int main(int argc, const char *argv[])
     double time_spent = time;
     int coutSolution, nbAretes;
     arete* solution;
+    solution = (arete*) calloc(g->nbAretes, sizeof(arete));
 
 	if(local){
 		if(print) puts("Demarrage de l'algorithme de recherche locale.");
@@ -93,14 +94,14 @@ int main(int argc, const char *argv[])
 		current = clock();
 		if(print) puts("Demarrage de l'algorithme genetique.");
 
-		noeuds_steiner_gene(g, (int)time_spent + 1, verbose, &coutSolution, &nbAretes, solution);
+		noeuds_steiner_gene(g, time, verbose, &coutSolution, &nbAretes, solution);
 
 		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
 		if(print){
 			printf("Algorithme genetique termine en %f sec.\n", time_spent);
 			printf("\nSolution trouvee de valeur %d. Affichage des aretes solution :\n", coutSolution);
 			for(int i = 0; i<nbAretes; i++){
-				printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
+				printf("%d %d %d\n", solution[i].noeud1->id+1, solution[i].noeud2->id+1, solution[i].poids);
 			}
 			puts("");
 		}

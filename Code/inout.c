@@ -51,9 +51,12 @@ graphe* lireFichier(const String fichier, const int verbose)
 			g->aretes[ac].poids = val3;
 
 			g->noeuds[val].nbAretes++;
+			g->noeuds[val2].nbAretes++;
 			//associer les aretes aux noeuds -> tableau a realloc a chaque fois
 			g->noeuds[val].aretes = (arete*)realloc(g->noeuds[val].aretes, g->noeuds[val].nbAretes * sizeof(arete));
 			g->noeuds[val].aretes[g->noeuds[val].nbAretes - 1] = g->aretes[ac];
+			g->noeuds[val2].aretes = (arete*)realloc(g->noeuds[val2].aretes, g->noeuds[val2].nbAretes * sizeof(arete));
+			g->noeuds[val2].aretes[g->noeuds[val2].nbAretes - 1] = g->aretes[ac];
 
 			ac++;
         }
