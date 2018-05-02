@@ -69,6 +69,41 @@ void quickSort(arete* tableau, int p, int r) {
     }
 }
 
+//idem pour trier les meilleurs individus
+int partitionnerPopulation(int** pop, int* tableau, int p, int r) {
+    int pivot = tableau[p], i = p-1, j = r+1;
+    int temp;
+    int* temp2;
+    while (1) {
+        do
+            j--;
+        while (tableau[j] > pivot);
+        do
+            i++;
+        while (tableau[i] < pivot);
+        if (i < j) {
+            temp = tableau[i];
+            tableau[i] = tableau[j];
+            tableau[j] = temp;
+            temp2 = pop[i];
+            pop[i] = pop[j];
+            pop[j] = temp2;
+        }
+        else
+            return j;
+    }
+}
+
+void quickSort_pop(int** pop, int* tableau, int p, int r) {
+	if(p > TAILLE_POPULATION) return; //pas besoin de trier la 2e partie
+    int q;
+    if (p < r) {
+        q = partitionnerPopulation(pop, tableau, p, r);
+        quickSort_pop(pop, tableau, p, q);
+        quickSort_pop(pop, tableau, q+1, r);
+    }
+}
+
 ///algorithme de kruskal
 int evaluerSolution(graphe* g, int* solution,
 						/*constantes et tableaux conteneurs :*/ const int M, int* parents, int* rangs, arete* aretesTab,
@@ -89,7 +124,8 @@ int evaluerSolution(graphe* g, int* solution,
 		if(solution[i]){
 			nbNoeudsSol++;
 			for(int j = 0; j < g->noeuds[i].nbAretes; j++){
-				if( solution[g->noeuds[i].aretes[j].noeud1->id] && solution[g->noeuds[i].aretes[j].noeud2->id]){
+				int n1 = g->noeuds[i].aretes[j].noeud1->id, n2 = g->noeuds[i].aretes[j].noeud2->id;
+				if( n1 >= i && n2 >= i && solution[n1] && solution[n2]){
 					aretesTab[na] = g->noeuds[i].aretes[j];
 					na++;
 				}
@@ -100,11 +136,10 @@ int evaluerSolution(graphe* g, int* solution,
 	quickSort(aretesTab, 0, na - 1);
 
 
-	for(int i = 0; i < na; i++){
-		printf("%d %d\n", aretesTab[i].noeud1->id, aretesTab[i].noeud2->id);
-	}
-getchar();
-//TODO : retirer les doublons ou changer le tri des aretes
+//	for(int i = 0; i < na; i++){
+//		printf("%d %d\n", aretesTab[i].noeud1->id, aretesTab[i].noeud2->id);
+//	}
+//getchar();
 
 
 	int k = 0;
@@ -151,7 +186,7 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 	parents = (int*) calloc(g->nbNoeuds, sizeof(int));
 	rangs = (int*) calloc(g->nbNoeuds, sizeof(int));
 	int* solutions;
-	solutions = (int*) calloc(TAILLE_POPULATION, sizeof(int));
+	solutions = (int*) calloc(TAILLE_POPULATION * 2, sizeof(int));
 	arete* aretesSol;
 	arete* aretesTab;
 	aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
@@ -166,7 +201,7 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 	//generation de la population
 	int** population;
 	int** populationEnfants;
-	population = (int**) calloc(TAILLE_POPULATION, sizeof(int*));
+	population = (int**) calloc(TAILLE_POPULATION * 2, sizeof(int*));	//on double la taille pour simplifier le tri a la selection
 	populationEnfants = (int**) calloc(TAILLE_POPULATION, sizeof(int*));
 	for(int i = 0; i < TAILLE_POPULATION; i++){
 		population[i] = (int*) calloc(g->nbNonTerminaux, sizeof(int));
@@ -181,23 +216,69 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 
 
 	int gen = 0;
+
+	for(int i = 0; i < TAILLE_POPULATION; i++){
+		//creation d'un tableau de solutions comprenant les sommets terminaux
+		for(int j = 0; j < g->nbNonTerminaux; j++){
+			solutionActuelle[g->nonTerminaux[j]->id] = population[i][j];
+
+
+			sol = evaluerSolution(g, solutionActuelle, M, parents, rangs, aretesTab, aretesSol, &nbAretesSol);
+			solutions[i] = sol;
+
+			//amelioration trouvee
+			if(sol < *valeurSolution){
+				if(verbose) printf("Amelioration trouvee de valeur %d (generation %d).\n", sol, gen);
+				*valeurSolution = sol;
+				*nbAretes = nbAretesSol;
+				for(int k = 0; k < nbAretesSol; k++){
+					aretes[k] = aretesSol[k];
+				}
+			}
+		}
+	}
+
 	do{
 
-		/*
-		//affichage des sommets actuellement inclus dans la solution
-		puts("Sommets :");
-		for(int i = 0; i < g->nbNonTerminaux; i++){
-			//test
-			sommets[i] = 1;
-
-			printf("%d:%d ", g->nonTerminaux[i]->id, sommets[i]);
-		}
-		//sommets[0] = 1;
-		puts("");
-		*/
-
+		//calcul nouvelle solution
 
 		for(int i = 0; i < TAILLE_POPULATION; i++){
+			//selection de deux individus
+			//on prend un individu au hasard, puis on determine s'il est selectionne en fonction de la valeur de sa solution
+			int parent1 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			while( solutions[parent1] / (double)(*valeurSolution) < generer_uniforme(0, 1)){
+				parent1 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			}
+
+			int parent2 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			while( parent1 == parent2 || solutions[parent2] / (double)(*valeurSolution) < generer_uniforme(0, 1)){
+				parent2 = (int)generer_uniforme(0, TAILLE_POPULATION);
+			}
+
+			int p = (int)generer_uniforme(0, g->nbNonTerminaux);
+			//croisement des deux parents
+			for(int j = 0; j < p; j++){
+				populationEnfants[i][j] = population[parent1][j];
+				//printf("%d ", populationEnfants[i][j]);
+				//printf("%d ", population[parent1][j]);
+			}
+			for(int j = p; j < g->nbNonTerminaux; j++){
+				//printf("%d ", population[parent2][j]);
+				populationEnfants[i][j] = population[parent2][j];
+			}
+			if( CHANCE_MUTATION >= generer_uniforme(0, 1)){
+				int r = (int)generer_uniforme(0, g->nbNonTerminaux);
+				populationEnfants[i][r] = !populationEnfants[i][r];
+			}
+		}
+
+		//remplacement des parents par les enfants
+		for(int i = 0; i < TAILLE_POPULATION; i++){
+			population[TAILLE_POPULATION + i] = populationEnfants[i];
+		}
+
+		//evaluation des enfants
+		for(int i = TAILLE_POPULATION; i < TAILLE_POPULATION * 2; i++){
 			//creation d'un tableau de solutions comprenant les sommets terminaux
 			for(int j = 0; j < g->nbNonTerminaux; j++){
 				solutionActuelle[g->nonTerminaux[j]->id] = population[i][j];
@@ -218,46 +299,12 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 			}
 		}
 
-		//calcul nouvelle solution
 
-		for(int i = 0; i < TAILLE_POPULATION; i++){
-			//selection de deux individus
-			//on prend un individu au hasard, puis on determine s'il est selectionne en fonction de la valeur de sa solution
-			int parent1 = (int)generer_uniforme(0, TAILLE_POPULATION);
-			while( solutions[parent1] / (double)(*valeurSolution) < generer_uniforme(0, 1)){
-				parent1 = (int)generer_uniforme(0, TAILLE_POPULATION);
-			}
-
-			int parent2 = (int)generer_uniforme(0, TAILLE_POPULATION);
-			while( solutions[parent2] / (double)(*valeurSolution) < generer_uniforme(0, 1)){
-				parent2 = (int)generer_uniforme(0, TAILLE_POPULATION);
-			}
-
-			int p = (int)generer_uniforme(0, g->nbNonTerminaux);
-			//croisement des deux parents
-			for(int j = 0; j < p; j++){
-				populationEnfants[i][j] = population[parent1][j];
-				//printf("%d ", populationEnfants[i][j]);
-				//printf("%d ", population[parent1][j]);
-			}
-			for(int j = p; j < g->nbNonTerminaux; j++){
-				//printf("%d ", population[parent2][j]);
-				populationEnfants[i][j] = population[parent2][j];
-			}
-			if( CHANCE_MUTATION >= generer_uniforme(0, 1)){
-				int r = (int)generer_uniforme(0, TAILLE_POPULATION);
-				populationEnfants[i][r] = !populationEnfants[i][r];
-			}
-		}
-
-		//remplacement des parents par les enfants
-		for(int i = 0; i < TAILLE_POPULATION; i++){
-			population[i] = populationEnfants[i];
-		}
+		quickSort_pop(population, solutions, 0, TAILLE_POPULATION * 2 - 1);
 
 		gen++;
 
-	}while((clock() - debut) / (double)CLOCKS_PER_SEC < (double)maxTime);
+	}while(maxTime == -1 || (clock() - debut) / (double)CLOCKS_PER_SEC < (double)maxTime);
 }
 
 ///algo de recherche locale

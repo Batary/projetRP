@@ -92,6 +92,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 		}
     }
 
+	fclose(f);
     //tri des aretes par poids croissant pour preparer l'algorithme de Kruskal
     /*
     for(int i = 0; i<g->nbAretes; i++){
@@ -109,7 +110,7 @@ graphe* lireFichier(const String fichier, const int verbose)
     }
 	*/
 
-    fclose(f);
+
     return g;
 }
 

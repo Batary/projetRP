@@ -56,8 +56,7 @@ int main(int argc, const char *argv[])
     }
 
     if(verbose) printf("Arguments : print = %d, verbose = %d, time = %d, file = %s, out = %s, local = %d, gene = %d\n", print, verbose, t, source, dest, local, gene);
-    if(t == -1) time = -1;
-    else time = (double)t;	//Comptage en secondes
+    time = (double)t;	//Comptage en secondes
 
 	//lecture du fichier graphe
     graphe* g = lireFichier(source, verbose);
