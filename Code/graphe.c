@@ -24,7 +24,9 @@ int trouverParent(const int x, int* parents){
 }
 
 ///fusionne deux ensembles de sommets
+/// attention parentX et parentY doivent être les parents des noeuds à fusionner
 void unionEnsembles(int parentX, int parentY, int* parents, int* rangs){
+
 	if(parentX == parentY) return;	//les ensembles sont deja les memes
 
 	//on prend le parent de rang le plus eleve pour reduire la profondeur de l'arbre
@@ -143,18 +145,22 @@ int evaluerSolution(graphe* g, int* solution,
 
 
 	int k = 0;
+	int parentX;
+	int parentY;
 	//parcours des aretes
 	while( k < na && *nbAretesSol < nbNoeudsSol - 1 ){
 		//test cycle
-		if(trouverParent(aretesTab[k].noeud1->id, parents) != trouverParent(aretesTab[k].noeud2->id, parents)){
+		parentX = trouverParent(aretesTab[k].noeud1->id, parents);
+		parentY = trouverParent(aretesTab[k].noeud2->id, parents);
+
+		if(parentX != parentY){
 			aretesSol[*nbAretesSol] = aretesTab[k];
-			*nbAretesSol+=1;
+			*nbAretesSol+=1;        
 			valeurSol += aretesTab[k].poids;
-			unionEnsembles(aretesTab[k].noeud1->id, aretesTab[k].noeud2->id, parents, rangs);
+			unionEnsembles(parentX, parentY, parents, rangs);
 		}
 		k++;
 	}
-
 	valeurSol += (nbNoeudsSol - 1 - *nbAretesSol) * M;
 
 	return valeurSol;
@@ -309,6 +315,5 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 
 ///algo de recherche locale
 void noeuds_steiner_local(graphe* g,const int time,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
-
-	//TODO...
+	
 }
