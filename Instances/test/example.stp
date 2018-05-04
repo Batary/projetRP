@@ -11,7 +11,8 @@ E 3 6 12
 E 6 7 2
 END
 SECTION Terminals
-Terminals 2
+Terminals 3
 T 1
+T 5
 T 7
 END 
