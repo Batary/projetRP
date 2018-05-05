@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-time 60 -file ../Instances/B/b02.stp -gene  -verbose -print" />
+				<Option parameters="-time 10 -file ../Instances/test/example.stp -gene  -verbose -print" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>

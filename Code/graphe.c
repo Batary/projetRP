@@ -182,15 +182,21 @@ int kruskal(graphe* g, /*sorties :*/ arete* aretesSol, int* nbAretesSol){
 	arete* aretesTab;
 	aretesTab = (arete*) calloc(g->nbAretes, sizeof(arete));
 
-	return kruskal2(g, solutionActuelle, 0, parents, rangs, aretesTab, aretesSol, nbAretesSol);
+	int r = kruskal2(g, solutionActuelle, 0, parents, rangs, aretesTab, aretesSol, nbAretesSol);
+
+	free(solutionActuelle);
+	free(parents);
+	free(rangs);
+
+	return r;
 }
 
 
-void generate_population(graphe* g, int** population, const int verbose){
+void generer_population_aleatoire(graphe* g, int** population, const int verbose){
 	if(verbose) printf("Generation d'une population de taille %d.\n", TAILLE_POPULATION);
 	//generation de la population
 	for(int i = 0; i < TAILLE_POPULATION * 2; i++){
-		population[i] = (int*) calloc(g->nbNonTerminaux, sizeof(int));
+		//population[i] = (int*) calloc(g->nbNonTerminaux, sizeof(int));
 		double p = generer_uniforme(0.2,0.5);
 		for(int j = 0; j < g->nbNonTerminaux; j++){
 			population[i][j] = generer_uniforme(0, 1) > p;
@@ -251,7 +257,7 @@ void dijkstra(graphe* g, int depart, /*out:*/ int* dist, int* prec){
 	}
 }
 
-void generate_population_heuristique_PCC(graphe* g, int** population, const int verbose){
+void generer_population_heuristique_PCC(graphe* g, int** population, const int verbose){
 	/*
 	if(verbose) printf("Generation d'une population de taille %d.\n", TAILLE_POPULATION);
 	//generation de la population
@@ -323,7 +329,7 @@ void generate_population_heuristique_PCC(graphe* g, int** population, const int 
 	//kruskal pour ACPM
 	arete* aretesSol = (arete*) calloc(g2->nbAretes, sizeof(arete));
 	int nbAretesSol = 0;
-	//kruskal pour ACPM
+
 	int val = kruskal(g2, /*sorties :*/ aretesSol, &nbAretesSol);
 
 	if(verbose){
@@ -336,11 +342,22 @@ void generate_population_heuristique_PCC(graphe* g, int** population, const int 
 	//etape G3
 	graphe* g3;
 	g3 = (graphe*)calloc(1,sizeof(graphe));
+	g3->aretes = (arete*)calloc(g->nbAretes,sizeof(arete));
 	//creation des noeuds
-	g3->nbNoeuds = g2->nbNoeuds;// on ne connait pas le nombre de noeuds a l'avance
+	g3->nbNoeuds = 0;//g2->nbNoeuds;// on ne connait pas le nombre de noeuds a l'avance
 	g3->noeuds = (noeud*)calloc(g->nbNoeuds,sizeof(noeud));
 	for(int i = 0; i < g3->nbNoeuds; i++){
-		g3->noeuds[i].id = i;//
+		g3->noeuds[i].id = i;
+	}
+
+	//tableau permettant de faire correspondre les noeuds de g3 a ceux de g
+	int* g3_to_g;
+	g3_to_g = (int*)calloc(g->nbNoeuds,sizeof(int));
+	int* g_to_g3;
+	g_to_g3 = (int*)calloc(g->nbNoeuds,sizeof(int));
+	for(int i = 0; i < g->nbNoeuds; i++){
+		g_to_g3[i] = -1;
+		g3_to_g[i] = -1;
 	}
 
 	for(int i = 0; i < g3->nbNoeuds; i++){
@@ -350,6 +367,7 @@ void generate_population_heuristique_PCC(graphe* g, int** population, const int 
 		printf("\n");
 	}
 
+	ac = 0;
 	//parcours des arrêtes dans G2:
 	for(int i=0; i< nbAretesSol; i++) {
 		//printf("%d %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids);
@@ -368,46 +386,112 @@ void generate_population_heuristique_PCC(graphe* g, int** population, const int 
 		//printf("\tnoeudprec : %d", noeudprec+1);
 		int noeudprecprec;
 		while(noeudprec != g->terminaux[noeudbut]->id) {
-			noeudprecprec = noeudprec;
+			noeudprecprec = noeudprec;	// --> noeud suivant dans le chemin
 			noeudprec = prec[noeudbut][noeudprec];
 			//	printf(" <- %d \n",  noeudprec+1);
 //getchar();
-/*
-			//************************
-			//************************
-			//   TODO  -> creation des aretes du chemin dans g3
-			//************************
-			//************************
 
-			//creation des aretes du chemin dans g3
-			g->nbAretes = val;
-			g->aretes = (arete*)calloc(val,sizeof(arete));
+			int e = 1;
 
-	        //valeur des aretes
-			//noeud1, noeud2, poids
-			val--; val2--;
-			g->aretes[ac].noeud1 = &g->noeuds[val];
-			g->aretes[ac].noeud2 = &g->noeuds[val2];
-			g->aretes[ac].poids = val3;
+			//creation du noeud s'il n'existe pas déjà
+			if(g_to_g3[noeudprecprec] == -1){
+				//g3->noeuds[g3->nbNoeuds].id = g3->nbNoeuds;
+				//g3->noeuds[g3->nbNoeuds].nbAretes = 1;
+				g_to_g3[noeudprecprec] = g3->nbNoeuds;
+				g3_to_g[g3->nbNoeuds] = noeudprecprec;
+				g3->nbNoeuds++;
+				e=0;
+			}
 
-			g->noeuds[val].nbAretes++;
-			g->noeuds[val2].nbAretes++;
-			//associer les aretes aux noeuds -> tableau a realloc a chaque fois
-			g->noeuds[val].aretes = (arete*)realloc(g->noeuds[val].aretes, g->noeuds[val].nbAretes * sizeof(arete));
-			g->noeuds[val].aretes[g->noeuds[val].nbAretes - 1] = g->aretes[ac];
-			g->noeuds[val2].aretes = (arete*)realloc(g->noeuds[val2].aretes, g->noeuds[val2].nbAretes * sizeof(arete));
-			g->noeuds[val2].aretes[g->noeuds[val2].nbAretes - 1] = g->aretes[ac];
+			if(g_to_g3[noeudprec] == -1){
+				//g3->noeuds[g3->nbNoeuds].id = g3->nbNoeuds;
+				//g3->noeuds[g3->nbNoeuds].nbAretes = 1;
+				g_to_g3[noeudprec] = g3->nbNoeuds;
+				g3_to_g[g3->nbNoeuds] = noeudprec;
+				g3->nbNoeuds++;
+				e=0;
+			}
 
-			ac++;
-			*/
+			//test si l'arete n'existe pas deja
+			if(e == 1){
+				for (int k = 0; k < g3->noeuds[g_to_g3[noeudprec]].nbAretes; k++){
+					int n1 = g3_to_g[g3->noeuds[g_to_g3[noeudprec]].aretes[k].noeud1->id], n2 = g3_to_g[g3->noeuds[g_to_g3[noeudprec]].aretes[k].noeud2->id];
+					if ((n1 == noeudprec || n1 == noeudprecprec) && (n2 == noeudprec || n2 == noeudprecprec)){
+						break;
+					}
+				}
+				e = 0;
+			}
 
+
+			//creation de l'arete du chemin dans g3
+			if(!e){
+
+				//recuperation du poids de l'arete originale
+				int val3 = 0;
+				for (int k = 0; k < g->noeuds[noeudprec].nbAretes; k++){
+					int n1 = g->noeuds[noeudprec].aretes[k].noeud1->id, n2 = g->noeuds[noeudprec].aretes[k].noeud2->id;
+					if ((n1 == noeudprec || n1 == noeudprecprec) && (n2 == noeudprec || n2 == noeudprecprec)){
+						val3 = g->noeuds[noeudprec].aretes[k].poids;
+						break;
+					}
+				}
+
+
+				int val = g_to_g3[noeudprec], val2 = g_to_g3[noeudprecprec];
+
+				//valeur des aretes
+				//noeud1, noeud2, poids
+				g3->aretes[ac].noeud1 = &g->noeuds[val];
+				g3->aretes[ac].noeud2 = &g->noeuds[val2];
+				g3->aretes[ac].poids = val3;
+
+				g3->noeuds[val].nbAretes++;
+				g3->noeuds[val2].nbAretes++;
+				//associer les aretes aux noeuds -> tableau a realloc a chaque fois
+				g3->noeuds[val].aretes = (arete*)realloc(g3->noeuds[val].aretes, g3->noeuds[val].nbAretes * sizeof(arete));
+				g3->noeuds[val].aretes[g3->noeuds[val].nbAretes - 1] = g3->aretes[ac];
+				g3->noeuds[val2].aretes = (arete*)realloc(g3->noeuds[val2].aretes, g3->noeuds[val2].nbAretes * sizeof(arete));
+				g3->noeuds[val2].aretes[g3->noeuds[val2].nbAretes - 1] = g3->aretes[ac];
+
+				g3->nbAretes++;
+				ac++;
+			}
 		}
-		//puts("");
-
 	}
 
+	for(int i = 0; i<g3->nbAretes; i++){
+		printf("%d %d %d\n", g3_to_g[g3->aretes[i].noeud1->id]+1, g3_to_g[g3->aretes[i].noeud2->id]+1, g3->aretes[i].poids);
+	}
+	puts("");
+
+	//kruskal pour ACPM
+	arete* aretesSol2;
+	aretesSol2 = (arete*) calloc(g3->nbAretes, sizeof(arete));
+	int* solution;
+	solution = (int*) calloc(g->nbNoeuds, sizeof(int));
+	nbAretesSol = 0;
+
+	kruskal(g3, /*sorties :*/ aretesSol2, &nbAretesSol);
+	for(int i = 0; i<nbAretesSol; i++){
+		//if(!g->noeuds[g3_to_g[aretesSol2[i].noeud1->id]].est_terminal)
+			solution[g3_to_g[aretesSol2[i].noeud1->id]] = 1;
+		//if(!g->noeuds[g3_to_g[aretesSol2[i].noeud2->id]].est_terminal)
+			solution[g3_to_g[aretesSol2[i].noeud2->id]] = 1;
+	}
+
+	//TODO : retirer les noeuds non terminaux isoles (etape 5)
 
 
+	int c = 0;
+	for(int i = 0; i<g->nbNoeuds; i++){
+		if(!g->noeuds[i].est_terminal){
+			population[0][c] = solution[i];
+			printf("%d ", population[0][c]);
+			c++;
+		}
+	}
+	puts("");
 
 
 }
@@ -454,6 +538,8 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 	//generation de la population
 	int** population;
 	population = (int**) calloc(TAILLE_POPULATION * 2, sizeof(int*));	//on double la taille pour simplifier le tri a la selection
+	for(int i = 0; i < TAILLE_POPULATION * 2; i++)
+		population[i] = (int*) calloc(g->nbNonTerminaux, sizeof(int));
 
 
 /*********/
@@ -484,8 +570,8 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 /*******/
 
 	//TODO: switcher de fonction avec un param
-	//generate_population(g, population, verbose);
-	generate_population_heuristique_PCC(g, population, verbose);
+	//generer_population_aleatoire(g, population, verbose);
+	generer_population_heuristique_PCC(g, population, verbose);
 	//fin todo
 
 	int gen = 0;
