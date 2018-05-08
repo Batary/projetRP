@@ -79,7 +79,7 @@ int main(int argc, const char *argv[])
 		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
 		if(print){
 			printf("Recherche locale terminee en %f sec.\n", time_spent);
-			printf("\nSolution trouvee de valeur %d. Affichage des aretes solution :\n", coutSolution);
+			printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
 			for(int i = 0; i<nbAretes; i++){
 				printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
 			}
@@ -98,7 +98,7 @@ int main(int argc, const char *argv[])
 		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
 		if(print){
 			printf("Algorithme genetique termine en %f sec.\n", time_spent);
-			printf("\nSolution trouvee de valeur %d. Affichage des aretes solution :\n", coutSolution);
+			printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
 			for(int i = 0; i<nbAretes; i++){
 				printf("%d %d %d\n", solution[i].noeud1->id+1, solution[i].noeud2->id+1, solution[i].poids);
 			}
