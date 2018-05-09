@@ -280,7 +280,7 @@ void generer_population_heuristique_PCC(graphe* g, int** population, const int v
 	//creation des noeuds
 	g2->nbNoeuds = g->nbTerminaux;
 	g2->noeuds = (noeud*)calloc(g->nbTerminaux,sizeof(noeud));
-	for(int i = 0; i<g2->nbNoeuds; i++){
+	for(int i = 0; i < g2->nbNoeuds; i++){
 		g2->noeuds[i].id = i;
 		//g2->noeuds[i].est_terminal = g2->noeuds[i].est_terminal;
 	}
@@ -540,6 +540,41 @@ void generer_population_heuristique_PCC(graphe* g, int** population, const int v
 }
 
 
+void generer_population_heuristique_ACPM(graphe* g, int** population, const int verbose){
+	if(verbose) printf("\n** génération de population via heuristique 2 (ACPM) **\n");
+
+	int fin_elimination = 0;
+
+	while (fin_elimination == 0) {
+		//kruskal pour ACPM
+		arete* aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
+		int nbAretesSol = 0;
+
+		int val = kruskal(g, /*sorties :*/ aretesSol, &nbAretesSol);
+		if(verbose){
+			printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
+			for(int i=0; i< nbAretesSol; i++) {
+				//printf("%d %d %d\n", g->aretes[aretesSol[i].noeud1->id]->id+1, g->terminaux[aretesSol[i].noeud2->id]->id+1, aretesSol[i].poids);
+				printf("%d %d %d terminal? %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids, aretesSol[i].noeud1->est_terminal, aretesSol[i].noeud2->est_terminal);
+			}
+		}
+
+		return 0; // todo asupp 
+		
+		//tester si toutes les feuilles de l'arbre sont des sommets terminaux
+		//		si oui retourner l'arbre obtenu
+
+		//		sinon tous les sommets non-terminaux de degré 1 sont éliminés de l’arbre et un nouvel
+		// 			arbre de poids minimum du graphe induit par G en prenant les sommets restants après
+		// 			l’élimination est généré.
+
+		//tester si plus aucune élimination est possible et passer fin_elimination à 1 si c'est le cas
+
+	}
+
+}
+
+
 ///algo genetique
 void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
 {
@@ -614,7 +649,8 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 
 	//TODO: switcher de fonction avec un param
 	generer_population_aleatoire(g, population, verbose);
-	generer_population_heuristique_PCC(g, population, verbose);
+	//generer_population_heuristique_PCC(g, population, verbose);
+	generer_population_heuristique_ACPM(g, population, verbose);
 	//fin todo
 
 	int gen = 0;
