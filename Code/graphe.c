@@ -164,16 +164,7 @@ int kruskal2(graphe* g, int* solution,
 	return valeurSol;
 }
 
-
-//init les params nécessaires pour kruskal2 afin d'avoir un appel plus concis
-int kruskal(graphe* g, /*sorties :*/ arete* aretesSol, int* nbAretesSol){
-	int sol = 0;	//solution actuelle
-	//representation des individus avec les sommets terminaux
-	int* solutionActuelle;
-	solutionActuelle = (int*) calloc(g->nbNoeuds, sizeof(int));
-	for(int i = 0; i < g->nbNoeuds; i++){
-		solutionActuelle[i] = 1;
-	}
+int kruskal_partiel(graphe* g,int* solutionPartielle, /*sorties :*/ arete* aretesSol, int* nbAretesSol){
 	//declaration des tableaux de parents et de rangs ( -> pour la detection de cycle)
 	int* parents;
 	int* rangs;
@@ -182,11 +173,26 @@ int kruskal(graphe* g, /*sorties :*/ arete* aretesSol, int* nbAretesSol){
 	arete* aretesTab;
 	aretesTab = (arete*) calloc(g->nbAretes, sizeof(arete));
 
-	int r = kruskal2(g, solutionActuelle, 0, parents, rangs, aretesTab, aretesSol, nbAretesSol);
+	int r = kruskal2(g, solutionPartielle, 0, parents, rangs, aretesTab, aretesSol, nbAretesSol);
 
-	free(solutionActuelle);
 	free(parents);
 	free(rangs);
+
+	return r;
+}
+
+//init les params nécessaires pour kruskal2 afin d'avoir un appel plus concis
+int kruskal(graphe* g, /*sorties :*/ arete* aretesSol, int* nbAretesSol){
+	//representation des individus avec les sommets terminaux
+	int* solutionActuelle;
+	solutionActuelle = (int*) calloc(g->nbNoeuds, sizeof(int));
+	for(int i = 0; i < g->nbNoeuds; i++){
+		solutionActuelle[i] = 1;
+	}
+
+	int r = kruskal_partiel(g, solutionActuelle, aretesSol, nbAretesSol);
+
+	free(solutionActuelle);
 
 	return r;
 }
@@ -538,40 +544,211 @@ void generer_population_heuristique_PCC(graphe* g, int** population, const int v
 
 
 }
+// TODO SUPPRIMER CETTE FONCTION SI PAS UTILISEE DANS HEURISTIQUE ACPM
+/*
+void copygtog2(graphe* g, graphe* g2, const int verbose) {
+    g2 = (graphe*)calloc(1,sizeof(graphe));
 
+	//copie des variables de base
+	g2->nbNoeuds = g->nbNoeuds;
+	g2->nbAretes = g->nbAretes;
+	g2->nbTerminaux = g->nbTerminaux;
+	g2->nbNonTerminaux = g->nbNonTerminaux;
+	//création des tableaux de base
+	g2->noeuds = (noeud*)calloc(g2->nbNoeuds,sizeof(noeud));
+	g2->aretes = (arete*)calloc(g2->nbAretes,sizeof(arete));
+	g2->terminaux = (noeud**)calloc(g2->nbTerminaux,sizeof(noeud*));
+	g2->nonTerminaux = (noeud**)calloc(g2->nbNonTerminaux,sizeof(noeud*));
+	// remplissage des tableaux1
+
+
+	//creation des noeuds
+	for(int i = 0; i < g2->nbNoeuds; i++){
+		g2->noeuds[i].id = i;
+		g2->noeuds[i].est_terminal = g->noeuds[i].est_terminal;
+		g2->noeuds[i].nbAretes = g->noeuds[i].nbAretes;
+		g2->noeuds[i].aretes = (arete*)calloc(g2->noeuds[i].nbAretes,sizeof(arete));
+
+    //creation des aretes
+	for(int i = 0; i < g2->nbAretes; i++) {
+		int idnoeud1 = g->aretes[i].noeud1->id;
+		int idnoeud2 = g->aretes[i].noeud2->id;
+		g2->aretes[i].poids = g->aretes[i].poids;
+		g2->aretes[i].noeud1 = &g2->noeuds[idnoeud1];
+		g2->aretes[i].noeud2 = &g2->noeuds[idnoeud2];
+
+		//TODO FINIR CES 2 LIGNES
+		g2->noeuds[idnoeud1].aretes[g->noeuds[idnoeud1].nbAretes - 1] = g2->aretes[i];
+		g2->noeuds[idnoeud2].aretes[g->noeuds[idnoeud2].nbAretes - 1] = g2->aretes[i];
+	}
+
+	//ajout de la liste de noeuds non terminaux et terminaux
+    int c = 0;
+    int c2 = 0;
+    for(int i = 0; i < g->nbNoeuds; i++){
+		if(!g->noeuds[i].est_terminal){
+			g->nonTerminaux[c] = &g->noeuds[i];
+			c++;
+		}
+		else {
+			g->terminaux[c2] = &g->noeuds[i];
+			c2++;
+		}
+    }
+
+	////////////////////////
+
+    //copie de la valeur des aretes
+    for (int i = 0; i < g->nbAretes; i++) {
+		g2->aretes[i].noeud1 = g->aretes[i].noeud1->id;
+		g2->aretes[i].noeud2 = g->noeuds[val2];
+		g2->aretes[i].poids = val3;
+
+		g2->noeuds[noeud1].nbAretes++;
+		g2->noeuds[noeud2].nbAretes++;
+		//associer les aretes aux noeuds -> tableau a realloc a chaque fois
+		g->noeuds[val].aretes = (arete*)realloc(g->noeuds[val].aretes, g->noeuds[val].nbAretes * sizeof(arete));
+		g->noeuds[val].aretes[g->noeuds[val].nbAretes - 1] = g->aretes[ac];
+		g->noeuds[val2].aretes = (arete*)realloc(g->noeuds[val2].aretes, g->noeuds[val2].nbAretes * sizeof(arete));
+		g->noeuds[val2].aretes[g->noeuds[val2].nbAretes - 1] = g->aretes[ac];
+
+		ac++;
+    }
+
+        //ajout des noeuds terminaux
+        else if(!strcmp(line,"Terminals") && fscanf(f, "%d", &val) == 1){
+			if(verbose) printf("%d ", val);
+			g->nbTerminaux = val;
+			g->terminaux = (noeud**)calloc(val, sizeof(noeud*));
+
+			g->nbNonTerminaux = g->nbNoeuds - val;
+			g->nonTerminaux = (noeud**)calloc(g->nbNonTerminaux, sizeof(noeud*));
+        }
+
+        //lecture de la valeur des noeuds terminaux
+        else if(!strcmp(line,"T") && fscanf(f, "%d", &val) == 1){
+			if(verbose) printf("%d ", val);
+			val--;
+			g->noeuds[val].est_terminal = 1;
+			g->terminaux[tc] = &g->noeuds[val];
+			tc++;
+        }
+
+        if(verbose) puts("");
+    }
+
+    //ajout de la liste de noeuds non terminaux
+    int c = 0;
+    for(int i = 0; i < g->nbNoeuds; i++){
+		if(!g->noeuds[i].est_terminal){
+			g->nonTerminaux[c] = &g->noeuds[i];
+			c++;
+		}
+    }
+}
+*/
 
 void generer_population_heuristique_ACPM(graphe* g, int** population, const int verbose){
 	if(verbose) printf("\n** génération de population via heuristique 2 (ACPM) **\n");
 
-	int fin_elimination = 0;
+	//au début la solution "partielle" contient tout le graphe, on a encore supprimé aucun noeud
+	int* solutionPartielle;
+	solutionPartielle = (int*) calloc(g->nbNoeuds, sizeof(int));
+	for(int i = 0; i < g->nbNoeuds; i++){
+		solutionPartielle[i] = 1;
+	}
 
-	while (fin_elimination == 0) {
+	while (1) { // quand on aura fini on fera un return
 		//kruskal pour ACPM
 		arete* aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
 		int nbAretesSol = 0;
 
-		int val = kruskal(g, /*sorties :*/ aretesSol, &nbAretesSol);
+		int val = kruskal_partiel(g, solutionPartielle, /*sorties :*/ aretesSol, &nbAretesSol);
 		if(verbose){
-			printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
-			for(int i=0; i< nbAretesSol; i++) {
-				//printf("%d %d %d\n", g->aretes[aretesSol[i].noeud1->id]->id+1, g->terminaux[aretesSol[i].noeud2->id]->id+1, aretesSol[i].poids);
+			 printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
+			/*for(int i=0; i< nbAretesSol; i++) {
 				printf("%d %d %d terminal? %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids, aretesSol[i].noeud1->est_terminal, aretesSol[i].noeud2->est_terminal);
-			}
+			}*/
 		}
 
-		return 0; // todo asupp 
-		
+		//on recupere le noeud max dans les arêtes
+		int noeudmax = 0;
+		for (int i = 0 ; i < nbAretesSol; i++){
+			int noeud1 = aretesSol[i].noeud1->id;
+			int noeud2 = aretesSol[i].noeud2->id;
+			//printf("adding %d and %d to vector\n", noeud1, noeud2);
+			if(noeud1 > noeudmax) noeudmax = noeud1;
+			if(noeud2 > noeudmax) noeudmax = noeud2;
+		}
+		//if(verbose) printf("noeudmax = %d \n", noeudmax);
+
+		//on cherche les noeuds actifs dans l'ACPM
+		int* noeudsactifs = (int)calloc(noeudmax, sizeof(int)); // 1 si le noeud est présent, 0 sinon
+		for (int i = 0 ; i < nbAretesSol; i++){
+			int noeud1 = aretesSol[i].noeud1->id;
+			int noeud2 = aretesSol[i].noeud2->id;
+			//if(verbose) printf("\tadding %d and %d to vector\n", noeud1+1, noeud2+1);
+			noeudsactifs[noeud1] = 1;
+			noeudsactifs[noeud2] = 1;
+		}
+		int nbnoeudsacpm = 0;
+		for (int i = 0 ; i < noeudmax; i++)
+			if(noeudsactifs[i]) nbnoeudsacpm++;
+
+		/*
+		if(verbose) printf("noeuds actifs ACPM : %d noeuds\n\t", nbnoeudsacpm);
+		for (int i = 0 ; i < noeudmax; i++)
+			if(verbose) printf("%d ",noeudsactifs[i]);
+		if(verbose) puts("");
+		*/
+
+		//maintenant on connait le nombre de noeuds et les noeuds de cet ACPM
+		// fonction qui retourne 1 si le noeud est une feuille (arité 1), 0 sinon
+		int isfeuille(int noeud) {
+			//on parcours toutes les aretes et on compte le nombre de fois qu'on observe ce noeud
+			int c = 0;
+			for (int i = 0 ; i < nbAretesSol; i++){
+				int noeud1 = aretesSol[i].noeud1->id;
+				int noeud2 = aretesSol[i].noeud2->id;
+				if(noeud1 == noeud) c++;
+				if(noeud2 == noeud) c++;
+				//si on l'a vu 2 fois on sait déjà que ce n'est pas une feuille
+				if(c >= 2) return 0;
+			}
+			//if(verbose) printf("\tfeuille de l'ACPM: noeud %d\n", noeud+1);
+			if(c==1) return 1; // c'est une feuille !
+		}
 		//tester si toutes les feuilles de l'arbre sont des sommets terminaux
-		//		si oui retourner l'arbre obtenu
+		// les feuilles sont les sommets d'arité 1
+		int allterm = 1; //boolean = 1 si toutes les feuilles sont des sommets terminaux
+		for(int i=0; i< g->nbNoeuds && allterm; i++) {
+			if(noeudsactifs[i]) { // test si c'est un sommet de l'ACPM
+				if( isfeuille(i) ) { // test si c'est bien un sommet feuille dans l'ACPM
+					if( ! g->noeuds[i].est_terminal ) { // test si sommet feuille ACPM est NON terminal dans g
+						if(verbose) printf("\tnoeud %d est une feuille de l'ACPM mais n'est pas terminal\n", i+1);
+						allterm = 0;
+						solutionPartielle[i] = 0; // on élimine si c'est un noeud feuille (degré 1) non terminal
+					}
+				}
+			}
+		}
+		//if(verbose) printf("\tallterm = %d\n", allterm);
 
-		//		sinon tous les sommets non-terminaux de degré 1 sont éliminés de l’arbre et un nouvel
-		// 			arbre de poids minimum du graphe induit par G en prenant les sommets restants après
-		// 			l’élimination est généré.
-
-		//tester si plus aucune élimination est possible et passer fin_elimination à 1 si c'est le cas
-
+		if(allterm) { // si toutes les feuilles sont des noeuds terminaux, retourner l'arbre obtenu (dans population)
+			for(int i = 0; i < TAILLE_POPULATION * 2; i++){
+				for(int j = 0; j < g->nbNonTerminaux; j++){
+					population[i][j] = noeudsactifs[g->nonTerminaux[j]->id];
+				}
+			}
+			int coutacpm = 0;
+			for (int i = 0 ; i < nbAretesSol; i++){
+				coutacpm += aretesSol[i].poids;
+			}
+			if(verbose) printf("*** heuristique ACPM terminée avec coût %d. ***\n\n", coutacpm);
+			return 0; // on à retourner l'arbre obtenu dans population donc on sort
+		}
+		//on boucle via le while(1)
 	}
-
 }
 
 
@@ -648,7 +825,7 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 /*******/
 
 	//TODO: switcher de fonction avec un param
-	generer_population_aleatoire(g, population, verbose);
+	//generer_population_aleatoire(g, population, verbose);
 	//generer_population_heuristique_PCC(g, population, verbose);
 	generer_population_heuristique_ACPM(g, population, verbose);
 	//fin todo
@@ -658,6 +835,8 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 	for(int i = 0; i < TAILLE_POPULATION; i++){
 		//creation d'un tableau de solutions comprenant les sommets terminaux
 		for(int j = 0; j < g->nbNonTerminaux; j++){
+			/*solution actuelle est codé sur TOUS les sommets, ceux terminaux sont déjà à 1*/
+			/* donc on copie ceux non-terminaux dedans */
 			solutionActuelle[g->nonTerminaux[j]->id] = population[i][j];
 		}
 
