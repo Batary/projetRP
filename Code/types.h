@@ -11,7 +11,7 @@ typedef struct {
 	int id;
 	int est_terminal;
 	int nbAretes;
-	arete* aretes;
+	arete** aretes;
 	//on peut eventuellement ajouter ici les noeuds connectes si besoin (meme si on peut y acceder indirectement)
 	//tableaux de distances et précédences à sauvegarder par dijkstra
 	int* dist;
