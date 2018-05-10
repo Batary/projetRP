@@ -895,8 +895,8 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 
 	//TODO: switcher de fonction avec un param
 	//generer_population_aleatoire(g, population, verbose);
-	//generer_population_heuristique_PCC(g, population, verbose);
-	generer_population_heuristique_ACPM(g, population, 0.2, verbose);
+	generer_population_heuristique_PCC(g, population, verbose);
+	//generer_population_heuristique_ACPM(g, population, 0.2, verbose); //0.2 = 20% de random sur les poids
 	//fin todo
 
 	int gen = 0;
