@@ -176,7 +176,9 @@ int kruskal_partiel(graphe* g,int* solutionPartielle, /*sorties :*/ arete* arete
 	arete* aretesTab;
 	aretesTab = (arete*) calloc(g->nbAretes, sizeof(arete));
 
-	int r = kruskal2(g, solutionPartielle, 0, parents, rangs, aretesTab, aretesSol, nbAretesSol);
+	//important d'avoir une grande valeur pour M afin de ne pas prendre les solutions non-admissibles
+	int r = kruskal2(g, solutionPartielle, 999999, parents, rangs, aretesTab, aretesSol, nbAretesSol);
+
 
 /*
 	printf("kruskal : aretes sol poids: %d arretes\n\t", *nbAretesSol);
@@ -936,28 +938,78 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 	if(verbose){printf("\nNombre de generations au total : %d.\n", gen);}
 }
 
+//renvoi 1 si il existe une arete entre ces deux sommets, 0 sinon
+int isarete(graphe* g, int n1, int n2) {
+	for(int i = 0; i < g->nbAretes; i++) {
+		int noeud1 = g->aretes[i].noeud1->id;
+		int noeud2 = g->aretes[i].noeud2->id;
+
+		if(noeud1 == n1 && noeud2 == n2)
+			return 1;
+		if(noeud1 == n2 && noeud2 == n1)
+			return 1;
+	}
+	return 0; // rien trouvé
+}
+
+//converti un encodage des sommmets non-terminaux en une solution de taille g->nbnoeuds
+void convertpartielletofullsolution(graphe* g,int* solS, int* solfull){
+	int cptnonterminaux = 0;
+	for(int i = 0; i < g->nbNoeuds; i++){
+		if(g->noeuds[i].est_terminal){
+			//printf("t \n");
+			solfull[i] = 1;
+		}
+		else { //non-terminal
+			solfull[i] = solS[cptnonterminaux];
+			//printf("nt %d %d %d\n", i, cptnonterminaux, solS[cptnonterminaux]);
+			cptnonterminaux++;
+		}
+	}
+	//puts("");
+}
+void convertfulltopartiellesolution(graphe* g, int* solfull, int* solpartielle){
+	for(int i = 0; i < g->nbNonTerminaux; i++)
+		solpartielle[i] = solfull[g->nonTerminaux[i]->id];
+}
+void printtabint(int * tab, int size){
+	for(int i = 0; i < size; i++){
+		printf("%d  ", tab[i]);
+	}
+	puts("");
+}
+
 ///algo de recherche locale
 void noeuds_steiner_local(graphe* g, const int time,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
 {
 	//recupération d'une solution initiale
 	int* individu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
+	int* solutionfull = (int*) calloc(g->nbNoeuds, sizeof(int));
 
 	//TODO: switcher de fonction avec un param
-	//attention ces fonctions retournes un individu décris par TOUS les noeuds, il faut trier ensuite
+	//!\\attention ces fonctions retournes un individu décris par TOUS les noeuds, il faut trier ensuite
 	//generer_population_aleatoire(g, individu, verbose);
-	generer_population_heuristique_PCC_one(g, individu, verbose);
+	generer_population_heuristique_PCC_one(g, solutionfull, verbose);
 	//generer_population_heuristique_ACPM_one(g, individu, verbose);
 	//fin todo
 
-	printf("\tsolution initiale: ");
+	convertfulltopartiellesolution(g, solutionfull, individu);
+/*
+	printf("solution initiale: ");
 	for(int i = 0; i < g->nbNonTerminaux; i++)
-		printf("%d ", individu[g->nonTerminaux[i]->id]);
+		printf("%d ", individu[i]);
 	puts("");
+
+*/
+	convertpartielletofullsolution(g, individu, solutionfull);
+	//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 
 	// pour avoir l'arbre de steine on applique kruskal sur l'individu
 	arete* aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
 	int nbAretesSol = 0;
-	int val = kruskal_partiel(g, individu, /*sorties :*/ aretesSol, &nbAretesSol);
+
+	convertpartielletofullsolution(g, individu, solutionfull);
+	int val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 
 	//on prend un return de base
 	*valeurSolution = val;
@@ -967,11 +1019,13 @@ void noeuds_steiner_local(graphe* g, const int time,const int verbose, /*sorties
 	}
 	//fin return de base
 
+/*
 	printf("cet individu donne une solution de %d aretes et de coût %d:\n", nbAretesSol, val);
 	for(int i = 0; i < nbAretesSol; i++) {
 		printf("\t%d %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids);
 	}
 	puts("");
+*/
 
 	void resetIndividu(int* indi){
 		for(int i = 0; i < g->nbNonTerminaux; i++)
@@ -982,8 +1036,6 @@ void noeuds_steiner_local(graphe* g, const int time,const int verbose, /*sorties
 			cible[i] = source[i];
 	}
 
-	int bestval = val;
-	int bestnbAretesSol = nbAretesSol;
 	arete* bestaretesSol = aretesSol;
 	int ameliore = 1; // bool
 	int gen = 0;
@@ -993,21 +1045,76 @@ void noeuds_steiner_local(graphe* g, const int time,const int verbose, /*sorties
 		ameliore = 0;
 
 		// tester les solutions par insertion
-		// TODO
+		for(int i = 0; i < g->nbNonTerminaux && !ameliore; i++) {
+			copieIndividu(individu, newindividu); // copie individu dans newindividu
+			if(individu[i] == 0) { //si le noeud est inactif on tente de l'insérer
+				newindividu[i] = 1;
+				/* on compte le nombre d'aretes qui connecte le nouveau sommet s au noeuds de {S}U{T}
+				   si on trouve 0   -> graphe induit pas connexe
+				   si on trouve 1   -> noeud de degré 1 donc inutile
+				   si on trouve >=2 -> c'est bon et on lance kruskal pour ACPM
+				   */
+				int cptaretes = 0;
+				int idcourant = g->nonTerminaux[i]->id;
+				//printf("test d'insertion du sommet %d\n", idcourant+1);
+				// aretes avec S
+				for(int i2 = 0; i2 < g->nbNonTerminaux; i2++) {
+					if(individu[i2] == 1) { // si c'est bien un sommet de S 
+						int idpair = g->nonTerminaux[i2]->id; //recup son id
+						int valarete = isarete(g, idcourant, idpair);
+						//printf("\tarete entre %d et %d nonterminal ?? -> %d\n", idcourant+1, idpair+1, valarete);
+						if(valarete) cptaretes++;
+					}
+				}
+
+				// aretes avec T
+				for(int i2 = 0; i2 < g->nbTerminaux; i2++) { // si c'est bien un sommet de T 
+					int idpair = g->terminaux[i2]->id; //recup son id
+					int valarete = isarete(g, idcourant, idpair);
+					//printf("\tarete entre %d et %d terminal ?? -> %d\n", idcourant+1, idpair+1, valarete);
+					if(valarete) cptaretes++;
+				}
+
+				//printf("le sommet %d possède %d aretes avec {S}U{T}\n", idcourant+1, cptaretes);
+			//	printtabint(newindividu, g->nbNonTerminaux);
+				//si tests OK, on lance kruskal pour avoir l'ACPM
+				if(cptaretes >= 2) {
+
+//					printf("test d'insertion de l'arete %d\n", idcourant+1);
+					convertpartielletofullsolution(g, newindividu, solutionfull);
+					//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
+					val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
+					//printf("kruskal : %d\n", val);
+					if(val < *valeurSolution) {
+						if(verbose) printf("\tAmelioration trouvee (par insertion de l'arête %d) \n\t\tde valeur %d (generation %d).\n", idcourant+1, val, gen);
+						nbAretesSol = nbAretesSol;
+						*valeurSolution = val;
+						*nbAretes = nbAretesSol;
+						for(int k = 0; k < nbAretesSol; k++){
+							aretes[k] = aretesSol[k];
+						}
+						gen++;
+						ameliore = 1;
+						copieIndividu(newindividu, individu); //copie newindividu dans individu
+					}
+				}
+			}
+		}
 
 		// tester les solutions par élimination
-
 		for(int i = 0; i < g->nbNonTerminaux && !ameliore; i++) {
+			//printf("individu : "); printtabint(individu, g->nbNonTerminaux);
 			copieIndividu(individu, newindividu); // copie individu dans newindividu
 			if(individu[i] == 1) { //si le noeud est actif on tente de l'éliminer
 				newindividu[i] = 0;
-				val = kruskal_partiel(g, newindividu, /*sorties :*/ aretesSol, &nbAretesSol);
-				if(val > bestval) {
-					if(verbose) printf("Amelioration trouvee de valeur %d (generation %d).\n", val, gen);
-					// TODO optimiser pour ne plus avoir autant de variable (pas très grave mais pas propre)
-					// s'inspirer de la fonction d'algo gen
-					bestval= val;
-					bestnbAretesSol = nbAretesSol;
+				int idcourant = g->nonTerminaux[i]->id;
+			//	printf("test d'élimination de l'arete %d\n", idcourant+1);
+				convertpartielletofullsolution(g, newindividu, solutionfull);
+				//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
+				val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
+				if(val < *valeurSolution) {
+					if(verbose) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (generation %d).\n", idcourant+1, val, gen);
+					nbAretesSol = nbAretesSol;
 					*valeurSolution = val;
 					*nbAretes = nbAretesSol;
 					for(int k = 0; k < nbAretesSol; k++){
@@ -1015,6 +1122,7 @@ void noeuds_steiner_local(graphe* g, const int time,const int verbose, /*sorties
 					}
 					gen++;
 					ameliore = 1;
+					copieIndividu(newindividu, individu); //copie newindividu dans individu
 				}
 			}
 		}
