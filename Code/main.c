@@ -80,7 +80,7 @@ int main(int argc, const char *argv[])
 		if(print){
 			printf("Recherche locale terminee en %f sec.\n", time_spent);
 			printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
-			for(int i = 0; i<nbAretes; i++){
+			for(int i = 0; i < nbAretes; i++){
 				printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
 			}
 			puts("");

@@ -538,20 +538,28 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 				c++;
 			}
 		}
-		
 		//0 1 0 1 sur l'exemple
 		printf("individu:\t");
 		for(int j = 0; j < g->nbNonTerminaux; j++)
 			printf("%d  ",population[i][j]);
 		puts("");
-		
 	}
 */
+/*
+	//0 1 0 1 sur l'exemple (ou 1  0  1  0  1  1  1 si on affiche tout)
+	printf("\tindividu: ");
+	for(int j = 0; j < g->nbNoeuds; j++)
+		printf("%d  ",!!solution[j]);
+	puts("");
+*/
+
 	printf("\tindividu généré de valeur %d\n",valsol);
 	//on copie la solution dans noeudsactifs
 	for(int i = 0; i < g->nbNoeuds; i++)
 		noeudsactifs[i] = !!solution[i]; // !! renvoi 0 si 0 et 1 si >=1
 }
+
+
 void generer_population_heuristique_PCC(graphe* g, int** population, double alea, const int verbose){
 	if(verbose) printf("\n** génération de population via heuristique 1 (PCC) **\n");
 	int* poids_origines = (int)calloc(g->nbAretes, sizeof(int));
@@ -761,7 +769,6 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 ///algo genetique
 void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
 {
-
 	srand(time(NULL));
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
@@ -930,6 +937,86 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 }
 
 ///algo de recherche locale
-void noeuds_steiner_local(graphe* g,const int time,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+void noeuds_steiner_local(graphe* g, const int time,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
+{
+	//recupération d'une solution initiale
+	int* individu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
 
+	//TODO: switcher de fonction avec un param
+	//attention ces fonctions retournes un individu décris par TOUS les noeuds, il faut trier ensuite
+	//generer_population_aleatoire(g, individu, verbose);
+	generer_population_heuristique_PCC_one(g, individu, verbose);
+	//generer_population_heuristique_ACPM_one(g, individu, verbose);
+	//fin todo
+
+	printf("\tsolution initiale: ");
+	for(int i = 0; i < g->nbNonTerminaux; i++)
+		printf("%d ", individu[g->nonTerminaux[i]->id]);
+	puts("");
+
+	// pour avoir l'arbre de steine on applique kruskal sur l'individu
+	arete* aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
+	int nbAretesSol = 0;
+	int val = kruskal_partiel(g, individu, /*sorties :*/ aretesSol, &nbAretesSol);
+
+	//on prend un return de base
+	*valeurSolution = val;
+	*nbAretes = nbAretesSol;
+	for(int k = 0; k < nbAretesSol; k++){
+		aretes[k] = aretesSol[k];
+	}
+	//fin return de base
+
+	printf("cet individu donne une solution de %d aretes et de coût %d:\n", nbAretesSol, val);
+	for(int i = 0; i < nbAretesSol; i++) {
+		printf("\t%d %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids);
+	}
+	puts("");
+
+	void resetIndividu(int* indi){
+		for(int i = 0; i < g->nbNonTerminaux; i++)
+			indi[i] = 0;
+	}
+	void copieIndividu(int* source, int* cible){
+		for(int i = 0; i < g->nbNonTerminaux; i++)
+			cible[i] = source[i];
+	}
+
+	int bestval = val;
+	int bestnbAretesSol = nbAretesSol;
+	arete* bestaretesSol = aretesSol;
+	int ameliore = 1; // bool
+	int gen = 0;
+	int* newindividu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
+	while(ameliore) { // tant qu'on améliore la solution on continue
+		//remarque: dans cette recherche locale on selectionne le premier mouvement améliorant
+		ameliore = 0;
+
+		// tester les solutions par insertion
+		// TODO
+
+		// tester les solutions par élimination
+
+		for(int i = 0; i < g->nbNonTerminaux && !ameliore; i++) {
+			copieIndividu(individu, newindividu); // copie individu dans newindividu
+			if(individu[i] == 1) { //si le noeud est actif on tente de l'éliminer
+				newindividu[i] = 0;
+				val = kruskal_partiel(g, newindividu, /*sorties :*/ aretesSol, &nbAretesSol);
+				if(val > bestval) {
+					if(verbose) printf("Amelioration trouvee de valeur %d (generation %d).\n", val, gen);
+					// TODO optimiser pour ne plus avoir autant de variable (pas très grave mais pas propre)
+					// s'inspirer de la fonction d'algo gen
+					bestval= val;
+					bestnbAretesSol = nbAretesSol;
+					*valeurSolution = val;
+					*nbAretes = nbAretesSol;
+					for(int k = 0; k < nbAretesSol; k++){
+						aretes[k] = aretesSol[k];
+					}
+					gen++;
+					ameliore = 1;
+				}
+			}
+		}
+	}
 }
