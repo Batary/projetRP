@@ -1039,7 +1039,6 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 			cible[i] = source[i];
 	}
 
-	arete* bestaretesSol = aretesSol;
 	int ameliore = 1; // bool
 	int gen = 0;
 	int* newindividu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
