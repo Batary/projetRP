@@ -829,10 +829,11 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 
 
 ///algo genetique
-void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
+void noeuds_steiner_gene(graphe* g, int heuristique, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
 {
 	srand(time(NULL));
 	clock_t debut = clock();
+	double tempscourant = 0;
 	*valeurSolution = INT_MAX;	//meilleure solution
 	*nbAretes = 0;
 	int sol = 0;	//solution actuelle
@@ -899,11 +900,14 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 */
 /*******/
 
-	//TODO: switcher de fonction avec un param
-	//generer_population_aleatoire(g, population, verbose);
-	generer_population_heuristique_PCC(g, population, 0.2, verbose); //0.2 = 20% de random sur les poids
-	//generer_population_heuristique_ACPM(g, population, 0.2, verbose); //0.2 = 20% de random sur les poids
-	//fin todo
+	//heuristique
+	if(heuristique == 1)
+		generer_population_aleatoire(g, population, verbose);
+	if(heuristique == 2)
+		generer_population_heuristique_PCC(g, population, 0.2, verbose); //0.2 = 20% de random sur les poids
+	if(heuristique == 3)
+		generer_population_heuristique_ACPM(g, population, 0.2, verbose); //0.2 = 20% de random sur les poids
+	//fin heuristique
 
 	int gen = 0;
 
@@ -919,7 +923,8 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 		solutions[i] = sol;
 		//amelioration trouvee
 		if(sol < *valeurSolution){
-			if(verbose) printf("Amelioration trouvee de valeur %d (generation %d).\n", sol, gen);
+			tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC ;
+			if(verbose) printf("Amelioration trouvee de valeur %d (generation %d) après %f sec.\n", sol, gen, tempscourant);
 			*valeurSolution = sol;
 			*nbAretes = nbAretesSol;
 			for(int k = 0; k < nbAretesSol; k++){
@@ -978,7 +983,8 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 
 				//amelioration trouvee
 				if(sol < *valeurSolution){
-					if(verbose) printf("Amelioration trouvee de valeur %d (generation %d).\n", sol, gen);
+					tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+					if(verbose) printf("Amelioration trouvee de valeur %d (generation %d) après %f sec.\n", sol, gen, tempscourant);
 					*valeurSolution = sol;
 					*nbAretes = nbAretesSol;
 					for(int k = 0; k < nbAretesSol; k++){
@@ -1070,12 +1076,12 @@ void printtabint(int * tab, int size){
 //
 
 ///algo de recherche locale (relance si le temps est pas atteint)
-void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+void noeuds_steiner_local(graphe* g, int heuristique, const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
 	srand(time(NULL));
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
 	int tempsrestant = maxTime;
-	int tempscourant = 0;
+	double tempscourant = 0;
 	double alea = 0.2; // 0.2 = 20%
 	int gen = 0;
 
@@ -1086,9 +1092,9 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 
 	while(tempsrestant > 0) {
 		if(gen == 0) // alea de 0 pour le premier
-			noeuds_steiner_local_one(g, tempsrestant, 0, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
+			noeuds_steiner_local_one(g, heuristique, tempsrestant, 0, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
 		else
-			noeuds_steiner_local_one(g, tempsrestant, alea, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
+			noeuds_steiner_local_one(g, heuristique, tempsrestant, alea, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
 		gen++;
 		//si meilleure solution on met à jour
 		if(valeurSolutionTemp < *valeurSolution) {
@@ -1098,7 +1104,8 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 			for(int k = 0; k < nbAretesTemp; k++){
 				aretes[k] = aretesTemp[k];
 			}
-			if(verbose) printf("\tAmelioration trouvee de valeur %d .\n", valeurSolutionTemp);
+			tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+			if(verbose) printf("\tAmelioration trouvee de valeur %d après %f sec\n", valeurSolutionTemp, tempscourant);
 		}
 		//recalcule du temps restant
 		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
@@ -1111,7 +1118,7 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 
 }
 // fait une seule recherche locale
-void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, double alea, int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
 	//double alea = 0; // 0.2 = 20%
@@ -1135,13 +1142,21 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bes
 	}
 	//printpoidsaretes(g);
 	// génération d'un individu depuis g
+	
+	//heuristique
+	if(heuristique == 1) {
+		double p = generer_uniforme(0.2,0.5);
+		for(int j = 0; j < g->nbNonTerminaux; j++){
+			solutionfull[j] = generer_uniforme(0, 1) > p;
+			//printf("%d \t %d\n", i, population[i][j]);
+		}
+	}
+	if(heuristique == 2)
+		generer_population_heuristique_PCC_one(g, solutionfull, verbose); //0.2 = 20% de random sur les poids
+	if(heuristique == 3)
+		generer_population_heuristique_ACPM_one(g, solutionfull, verbose); //0.2 = 20% de random sur les poids
+	//fin heuristique
 
-	//TODO: switcher de fonction avec un param
-	//!\\attention ces fonctions retournent un individu décrit par TOUS les noeuds, il faut trier ensuite
-	//generer_population_aleatoire(g, solutionfull, verbose);
-	//generer_population_heuristique_PCC_one(g, solutionfull, verbose);
-	generer_population_heuristique_ACPM_one(g, solutionfull, verbose);
-	//fin todo
 
 	//on remet les poids d'origine sur g
 	for(int i = 0; i < g->nbAretes; i++){
@@ -1244,7 +1259,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bes
 					val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 					//printf("kruskal : %d\n", val);
 					if(val < *valeurSolution) {
-						if(verbose && val < bestsol) printf("\tAmelioration trouvee (par insertion de l'arête %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
+						//if(verbose && val < bestsol) printf("\tAmelioration trouvee (par insertion de l'arête %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 						nbAretesSol = nbAretesSol;
 						*valeurSolution = val;
 						*nbAretes = nbAretesSol;
@@ -1271,7 +1286,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bes
 				//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 				val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 				if(val < *valeurSolution) {
-					if(verbose && val < bestsol) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
+					//if(verbose && val < bestsol) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 					nbAretesSol = nbAretesSol;
 					*valeurSolution = val;
 					*nbAretes = nbAretesSol;

@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <time.h>
+#include <dirent.h> 
 
 #include "inout.h"
 #include "graphe.h"
@@ -29,6 +30,7 @@ int main(int argc, const char *argv[])
     double time = 0;
     int verbose = 0, print = 0, t = -1, gene = 1, local = 1;			//options de lancement
     String source = NULL, dest = OUT;
+    int heuristique = 0;
 
     //lecture des parametres
     char *ptr;
@@ -41,12 +43,16 @@ int main(int argc, const char *argv[])
             source = (String)malloc((strlen(argv[i+1]) + 1) * sizeof(char));
             strcpy(source, argv[i+1]);
         }
+        else if(!strcmp(argv[i], "-dir") && i+1 < argc) {
+          analysedossier(argv[i+1]);
+        }
         if(!strcmp(argv[i], "-out") && i+1 < argc){
 			dest = (String)malloc((strlen(argv[i+1]) + 1) * sizeof(char));
             strcpy(dest, argv[i+1]);
         }
         if(!strcmp(argv[i], "-gene")) local = 0;
         if(!strcmp(argv[i], "-local")) gene = 0;
+        if(!strcmp(argv[i], "-pop")) heuristique = (int)strtol(argv[i+1], &ptr, 10);
     }
 
     if(!source)
@@ -54,13 +60,20 @@ int main(int argc, const char *argv[])
         puts("No source file has been specified. Please specify a source file with -file");
         return EXIT_FAILURE;
     }
+    if(heuristique == 0) {
+        heuristique = 1; // heuristique par défaut
+        printf("pas d'heuristique choisie, choix par défaut de l'heuristique %d\n", heuristique);
+    }
+    if(heuristique < 1 || heuristique > 3 ) {
+        printf("mauvaise heuristique de population");
+    }
 
     if(!local && !gene){
 		local = 1;
 		gene = 1;
     }
 
-    if(verbose) printf("Arguments : print = %d, verbose = %d, time = %d, file = %s, out = %s, local = %d, gene = %d\n", print, verbose, t, source, dest, local, gene);
+    if(verbose) printf("Arguments : print = %d, verbose = %d, pop = %d, time = %d, file = %s, out = %s, local = %d, gene = %d\n", print, verbose, heuristique, t, source, dest, local, gene);
     time = (double)t;	//Comptage en secondes
 
 	//lecture du fichier graphe
@@ -79,7 +92,7 @@ int main(int argc, const char *argv[])
 	if(local){
 		if(print) puts("Demarrage de l'algorithme de recherche locale.");
 
-		noeuds_steiner_local(g, time, verbose, &coutSolution, &nbAretes, solution);
+		noeuds_steiner_local(g, heuristique, time, verbose, &coutSolution, &nbAretes, solution);
 
 		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
 		if(print){
@@ -98,7 +111,7 @@ int main(int argc, const char *argv[])
 		current = clock();
 		if(print) puts("Demarrage de l'algorithme genetique.");
 
-		noeuds_steiner_gene(g, time, verbose, &coutSolution, &nbAretes, solution);
+		noeuds_steiner_gene(g, heuristique, time, verbose, &coutSolution, &nbAretes, solution);
 
 		time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
 		if(print){
@@ -117,4 +130,20 @@ int main(int argc, const char *argv[])
 
     puts("Programme termine avec succes. \n");
     return EXIT_SUCCESS;
+}
+
+
+
+void analysedossier(String dname){
+    printf("analyse d'un dossier:\n");
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(dname);
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            if(strcmp(dir->d_name, ".") && strcmp(dir->d_name, "..")) //strcmp: 0 si identique
+                printf("%s\n", dir->d_name);
+        }
+        closedir(d);
+    }
 }
