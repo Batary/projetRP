@@ -382,9 +382,7 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 		s+=g->noeuds[i].nbAretes;
 	}
 	printf("nb aretes g3 : %d \t nb aretes solution : %d \t c : %d\n",g3->nbAretes, nbAretesSol,s/2);
-*/
 
-/*
 	puts("solution (arbre G4) :");
 	for(int i = 0; i<nbAretesSol; i++){
 		printf("(%d %d)\n", g3_to_g[aretesSol2[i].noeud1->id]+1, g3_to_g[aretesSol2[i].noeud2->id]+1);
@@ -406,18 +404,31 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 			n2 = *(aretesSol2[i].noeud1);
 		}
 
-		if( solution[g3_to_g[n.id]] == 1 && !g->noeuds[g3_to_g[n.id]].est_terminal ){
-			if(verbose)
-				printf("Suppression du noeud %d (%d %d) (%d aretes)\n", g3_to_g[n.id]+1, g3_to_g[aretesSol2[i].noeud1->id]+1, g3_to_g[aretesSol2[i].noeud2->id]+1, n.nbAretes);
+		while( solution[g3_to_g[n.id]] == 1 && !g->noeuds[g3_to_g[n.id]].est_terminal ){
+//			if(verbose)
+//				printf("Suppression du noeud %d (%d %d)\n", g3_to_g[n.id]+1, g3_to_g[n.id]+1, g3_to_g[n2.id]+1);
 
 			//retirer aretesSol2[i] de la solution
 			solution[g3_to_g[n.id]] = 0;
 			solution[g3_to_g[n2.id]]--;
 
+//			if(!g->noeuds[g3_to_g[n2.id]].est_terminal)
+//				printf("Aretes restantes au noeud non terminal connecte : %d\n", solution[g3_to_g[n2.id]]);
 
-			//TODO ... boucler
-
-			//impossible de trouver une instance avec un tel noeud a supprimer
+			if( solution[g3_to_g[n2.id]] == 1 && !g->noeuds[g3_to_g[n2.id]].est_terminal ){
+				n = n2;
+				//trouver l'arete connectee au noeud n
+				for(int j = 0; j < n.nbAretes; j++){
+					if( n.aretes[j]->noeud1->id != n.id && solution[g3_to_g[n.aretes[j]->noeud1->id]] > 0){
+						n2 = *(n.aretes[j]->noeud1);
+						break;
+					}
+					if( n.aretes[j]->noeud2->id != n.id && solution[g3_to_g[n.aretes[j]->noeud2->id]] > 0){
+						n2 = *(n.aretes[j]->noeud2);
+						break;
+					}
+				}
+			}
 
 		}
 	}
