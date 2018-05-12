@@ -4,11 +4,16 @@
 #include <string.h>
 #include <time.h>
 #include <dirent.h>
+#include <libgen.h>
 
 #include "inout.h"
 #include "graphe.h"
 #include "types.h"
 #include "utils.h"
+
+#if SC_PLATFORM == SC_PLATFORM_LINUX
+#include <errno.h>
+#endif
 
 /**
 Options actuellement disponibles :
@@ -22,7 +27,7 @@ Options actuellement disponibles :
 **/
 
 
-void analysefichier(int print, int verbose, int heuristique, int t, String source, String dest, int local, int gene, double time){
+void analysefichier(int print, int verbose, int heuristique, int maxtime, String source, String dest, int local, int gene){
     //lecture du fichier graphe
     graphe* g = lireFichier(source, verbose);
     if(g == NULL){
@@ -31,22 +36,30 @@ void analysefichier(int print, int verbose, int heuristique, int t, String sourc
     }
 
     clock_t current = clock();
-    double time_spent = time;
+    double time_spent = 0;
     int coutSolution, nbAretes;
     arete* solution;
     solution = (arete*) calloc(g->nbAretes, sizeof(arete));
 
+    String filename = NULL;
+
+    if(dest) {
+        filename = (String)malloc((strlen(basename(source)) + 1) * sizeof(char));
+        strcpy(filename,basename(source));
+        printf(">>> filename \"%s\" from %s\n", filename, source);
+    }
+
     if(local){
         if(print) puts("Demarrage de l'algorithme de recherche locale.");
 
-        noeuds_steiner_local(g, heuristique, dest, time, verbose, &coutSolution, &nbAretes, solution);
+        noeuds_steiner_local(g, heuristique, dest, filename, maxtime, verbose, &coutSolution, &nbAretes, solution);
 
         time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
         if(print){
             printf("Recherche locale terminee en %f sec.\n", time_spent);
             printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
             for(int i = 0; i < nbAretes; i++){
-                printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
+                printf("%d %d %d\n", solution[i].noeud1->id+1, solution[i].noeud2->id+1, solution[i].poids);
             }
             puts("");
         }
@@ -58,7 +71,7 @@ void analysefichier(int print, int verbose, int heuristique, int t, String sourc
         current = clock();
         if(print) puts("Demarrage de l'algorithme genetique.");
 
-        noeuds_steiner_gene(g, heuristique, dest, time, verbose, &coutSolution, &nbAretes, solution);
+        noeuds_steiner_gene(g, heuristique, dest, filename, maxtime, verbose, &coutSolution, &nbAretes, solution);
 
         time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
         if(print){
@@ -81,8 +94,7 @@ int main(int argc, const char *argv[])
 
     puts("Demarrage du programme. \n");
 
-    double time = 0;
-    int verbose = 0, print = 0, t = -1, gene = 1, local = 1;			//options de lancement
+    int verbose = 0, print = 0, maxtime = -1, gene = 1, local = 1;			//options de lancement
     String source = NULL, dest = NULL, dname = NULL;
     int heuristique = 0;
 
@@ -92,7 +104,7 @@ int main(int argc, const char *argv[])
     {
         if(!strcmp(argv[i], "-print")) print = 1;
         if(!strcmp(argv[i], "-verbose")) verbose = 1;
-        if(!strcmp(argv[i], "-time") && i+1 < argc) t = (int)strtol(argv[i+1], &ptr, 10);
+        if(!strcmp(argv[i], "-time") && i+1 < argc) maxtime = (int)strtol(argv[i+1], &ptr, 10);
         if(!strcmp(argv[i], "-file") && i+1 < argc){
             source = (String)malloc((strlen(argv[i+1]) + 1) * sizeof(char));
             strcpy(source, argv[i+1]);
@@ -104,6 +116,13 @@ int main(int argc, const char *argv[])
         if(!strcmp(argv[i], "-out") && i+1 < argc){
 			dest = (String)malloc((strlen(argv[i+1]) + 1) * sizeof(char));
             strcpy(dest, argv[i+1]);
+
+            if(opendir(dest)) {} else if (ENOENT == errno){
+                /* Directory does not exist. */
+                printf("error: output directory does not exist.\n");
+                return EXIT_FAILURE;
+            }
+
         }
         if(!strcmp(argv[i], "-gene")) local = 0;
         if(!strcmp(argv[i], "-local")) gene = 0;
@@ -129,9 +148,7 @@ int main(int argc, const char *argv[])
 		gene = 1;
     }
 
-    if(verbose) printf("Arguments : print = %d, verbose = %d, pop = %d, time = %d, file = %s, dir = %s, out = %s, local = %d, gene = %d\n", print, verbose, heuristique, t, source, dname, dest, local, gene);
-    time = (double)t;	//Comptage en secondes
-
+    if(verbose) printf("Arguments : print = %d, verbose = %d, pop = %d, maxtime = %d, file = %s, dir = %s, out = %s, local = %d, gene = %d\n", print, verbose, heuristique, maxtime, source, dname, dest, local, gene);
 
     if(dname) {
         printf("analyse d'un dossier:\n");
@@ -147,13 +164,13 @@ int main(int argc, const char *argv[])
                     strcat(fullfilename, dir->d_name);
                     //printf("%s%s\n", dname,dir->d_name);
                     printf("analyse de %s\n", fullfilename);
-                    analysefichier(print, verbose, heuristique, t, fullfilename, dest, local, gene, time);
+                    analysefichier(print, verbose, heuristique, maxtime, fullfilename, dest, local, gene);
                 }
             }
             closedir(d);
         }
     }
-    else analysefichier(print, verbose, heuristique, t, source, dest, local, gene, time);
+    else analysefichier(print, verbose, heuristique, maxtime, source, dest, local, gene);
 
     free(source);
 
