@@ -3,7 +3,7 @@
 
 #include <string.h>
 #include <time.h>
-#include <dirent.h> 
+#include <dirent.h>
 
 #include "inout.h"
 #include "graphe.h"
@@ -20,6 +20,61 @@ Options actuellement disponibles :
 -gene : algo genetique seul
 -local : algo de recherche locale seul
 **/
+
+
+void analysefichier(int print, int verbose, int heuristique, int t, String source, String dest, int local, int gene, double time){
+    //lecture du fichier graphe
+    graphe* g = lireFichier(source, verbose);
+    if(g == NULL){
+        printf("Fichier %s non trouve ou fichier vide. \n\n", source);
+        return;
+    }
+
+    clock_t current = clock();
+    double time_spent = time;
+    int coutSolution, nbAretes;
+    arete* solution;
+    solution = (arete*) calloc(g->nbAretes, sizeof(arete));
+
+    if(local){
+        if(print) puts("Demarrage de l'algorithme de recherche locale.");
+
+        noeuds_steiner_local(g, heuristique, dest, time, verbose, &coutSolution, &nbAretes, solution);
+
+        time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
+        if(print){
+            printf("Recherche locale terminee en %f sec.\n", time_spent);
+            printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
+            for(int i = 0; i < nbAretes; i++){
+                printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
+            }
+            puts("");
+        }
+        //TODO : write solution on disk
+
+    }
+
+    if(gene){
+        current = clock();
+        if(print) puts("Demarrage de l'algorithme genetique.");
+
+        noeuds_steiner_gene(g, heuristique, dest, time, verbose, &coutSolution, &nbAretes, solution);
+
+        time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
+        if(print){
+            printf("Algorithme genetique termine en %f sec.\n", time_spent);
+            printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
+            for(int i = 0; i<nbAretes; i++){
+                printf("%d %d %d\n", solution[i].noeud1->id+1, solution[i].noeud2->id+1, solution[i].poids);
+            }
+            puts("");
+        }
+    }
+
+    free(solution);
+    freeGraphe(g);
+}
+
 
 int main(int argc, const char *argv[])
 {
@@ -103,58 +158,5 @@ int main(int argc, const char *argv[])
 
     puts("Programme termine avec succes. \n");
     return EXIT_SUCCESS;
-}
-
-void analysefichier(int print, int verbose, int heuristique, int t, String source, String dest, int local, int gene, double time){
-    //lecture du fichier graphe
-    graphe* g = lireFichier(source, verbose);
-    if(g == NULL){
-        puts("Fichier non trouve ou fichier vide. \n");
-        return EXIT_FAILURE;
-    }
-
-    clock_t current = clock();
-    double time_spent = time;
-    int coutSolution, nbAretes;
-    arete* solution;
-    solution = (arete*) calloc(g->nbAretes, sizeof(arete));
-
-    if(local){
-        if(print) puts("Demarrage de l'algorithme de recherche locale.");
-
-        noeuds_steiner_local(g, heuristique, dest, time, verbose, &coutSolution, &nbAretes, solution);
-
-        time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
-        if(print){
-            printf("Recherche locale terminee en %f sec.\n", time_spent);
-            printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
-            for(int i = 0; i < nbAretes; i++){
-                printf("%d %d %d\n", solution[i].noeud1->id, solution[i].noeud2->id, solution[i].poids);
-            }
-            puts("");
-        }
-        //TODO : write solution on disk
-
-    }
-
-    if(gene){
-        current = clock();
-        if(print) puts("Demarrage de l'algorithme genetique.");
-
-        noeuds_steiner_gene(g, heuristique, dest, time, verbose, &coutSolution, &nbAretes, solution);
-
-        time_spent = (double)(clock() - current) / CLOCKS_PER_SEC;
-        if(print){
-            printf("Algorithme genetique termine en %f sec.\n", time_spent);
-            printf("\nSolution trouvee de valeur %d (%d aretes). Affichage des aretes solution :\n", coutSolution, nbAretes);
-            for(int i = 0; i<nbAretes; i++){
-                printf("%d %d %d\n", solution[i].noeud1->id+1, solution[i].noeud2->id+1, solution[i].poids);
-            }
-            puts("");
-        }
-    }
-
-    free(solution);
-    freeGraphe(g);
 }
 

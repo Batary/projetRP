@@ -372,7 +372,7 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 	solution = (int*) calloc(g->nbNoeuds, sizeof(int));
 	nbAretesSol = 0;
 
-	int valsol = kruskal(g3, /*sorties :*/ aretesSol2, &nbAretesSol);
+	/*int valsol = */ kruskal(g3, /*sorties :*/ aretesSol2, &nbAretesSol);
 
 
 /*
@@ -595,13 +595,15 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 		//kruskal pour ACPM
 		int nbAretesSol = 0;
 
-		int val = kruskal_partiel(g, solutionPartielle, /*sorties :*/ aretesSol, &nbAretesSol);
+		/*int val =*/ kruskal_partiel(g, solutionPartielle, /*sorties :*/ aretesSol, &nbAretesSol);
+		/*
 		if(verbose){
-			//printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
-			/*for(int i=0; i< nbAretesSol; i++) {
+			printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
+			for(int i=0; i< nbAretesSol; i++) {
 				printf("%d %d %d terminal? %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids, aretesSol[i].noeud1->est_terminal, aretesSol[i].noeud2->est_terminal);
-			}*/
+			}
 		}
+		*/
 
 		/*
 		// TODO SUPPRIMER SI USELESS NOW ??
@@ -883,7 +885,7 @@ int isarete(graphe* g, int n1, int n2) {
 }
 */
 
-///algo de recherche locale 
+///algo de recherche locale
 void noeuds_steiner_local(graphe* g, int heuristique, String dest, const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
 	srand(time(NULL));
 	clock_t debut = clock();
@@ -950,7 +952,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 	}
 	//printpoidsaretes(g);
 	// génération d'un individu depuis g
-	
+
 	//heuristique
 	if(heuristique == 1) {
 		double p = generer_uniforme(0.2,0.5);
@@ -1088,8 +1090,8 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 			copieIndividu(individu, newindividu); // copie individu dans newindividu
 			if(individu[i] == 1) { //si le noeud est actif on tente de l'éliminer
 				newindividu[i] = 0;
-				int idcourant = g->nonTerminaux[i]->id;
-			//	printf("test d'élimination de l'arete %d\n", idcourant+1);
+				//int idcourant = g->nonTerminaux[i]->id;
+				//printf("test d'élimination de l'arete %d\n", idcourant+1);
 				convertpartielletofullsolution(g, newindividu, solutionfull);
 				//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 				val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
