@@ -170,3 +170,14 @@ void printtabint(int * tab, int size){
 	}
 	puts("");
 }
+
+
+void resetIndividu(graphe* g, int* indi){
+	for(int i = 0; i < g->nbNonTerminaux; i++)
+		indi[i] = 0;
+}
+void copieIndividu(graphe* g, int* source, int* cible){
+	for(int i = 0; i < g->nbNonTerminaux; i++)
+		cible[i] = source[i];
+}
+

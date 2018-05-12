@@ -16,7 +16,7 @@ Options actuellement disponibles :
 -verbose : detaille l'execution du programme
 -time <X> : limite le temps a X secondes par instance (5 min = 300 sec)
 -file <source_file> : le nom du fichier d'entree a ouvrir
--out <dest_file> : le fichier de sortie, par défaut, ../Output/ ( + <nomfichier>.out )
+-out <dest_folder> : le dossier de sortie, par exemple ../Output/B/
 -gene : algo genetique seul
 -local : algo de recherche locale seul
 **/
@@ -112,15 +112,16 @@ int main(int argc, const char *argv[])
 
     if(!source && !dname)
     {
-        puts("No source file has been specified. Please specify a source file with -file or directory with -dir");
+        puts("Aucune source specifiee, veuillez specifier la source avec -file ou -dir.");
         return EXIT_FAILURE;
+    }
+    if(heuristique < 0 || heuristique > 3 ) {
+        printf("Mauvaise heuristique de population\n");
+        heuristique = 0;
     }
     if(heuristique == 0) {
         heuristique = 1; // heuristique par défaut
-        printf("pas d'heuristique choisie, choix par défaut de l'heuristique %d\n", heuristique);
-    }
-    if(heuristique < 0 || heuristique > 3 ) {
-        printf("mauvaise heuristique de population");
+        printf("Pas d'heuristique choisie, choix par défaut de l'heuristique %d.\n1 = aleatoire\n2 = Plus Court Chemin (PCC)\n3 = Arbre Couvrant de Poids Minimum (ACPM)", heuristique);
     }
 
     if(!local && !gene){

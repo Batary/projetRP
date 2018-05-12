@@ -1008,15 +1008,6 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 	puts("");
 */
 
-	void resetIndividu(int* indi){
-		for(int i = 0; i < g->nbNonTerminaux; i++)
-			indi[i] = 0;
-	}
-	void copieIndividu(int* source, int* cible){
-		for(int i = 0; i < g->nbNonTerminaux; i++)
-			cible[i] = source[i];
-	}
-
 	int ameliore = 1; // bool
 	int gen = 0;
 	int* newindividu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
@@ -1029,7 +1020,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 
 		// tester les solutions par insertion
 		for(int i = 0; i < g->nbNonTerminaux && !ameliore; i++) {
-			copieIndividu(individu, newindividu); // copie individu dans newindividu
+			copieIndividu(g, individu, newindividu); // copie individu dans newindividu
 			if(individu[i] == 0) { //si le noeud est inactif on tente de l'insérer
 				newindividu[i] = 1;
 				/* on compte le nombre d'aretes qui connecte le nouveau sommet s au noeuds de {S}U{T}
@@ -1078,7 +1069,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 						}
 						gen++;
 						ameliore = 1;
-						copieIndividu(newindividu, individu); //copie newindividu dans individu
+						copieIndividu(g, newindividu, individu); //copie newindividu dans individu
 					}
 				}
 			}
@@ -1087,7 +1078,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 		// tester les solutions par élimination
 		for(int i = 0; i < g->nbNonTerminaux && !ameliore; i++) {
 			//printf("individu : "); printtabint(individu, g->nbNonTerminaux);
-			copieIndividu(individu, newindividu); // copie individu dans newindividu
+			copieIndividu(g, individu, newindividu); // copie individu dans newindividu
 			if(individu[i] == 1) { //si le noeud est actif on tente de l'éliminer
 				newindividu[i] = 0;
 				//int idcourant = g->nonTerminaux[i]->id;
@@ -1105,7 +1096,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 					}
 					gen++;
 					ameliore = 1;
-					copieIndividu(newindividu, individu); //copie newindividu dans individu
+					copieIndividu(g, newindividu, individu); //copie newindividu dans individu
 				}
 			}
 		}
