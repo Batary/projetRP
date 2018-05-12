@@ -711,8 +711,20 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 
 
 ///algo genetique
-void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
-{
+void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+	FILE *f = NULL;
+	if(dest) {
+		int size = strlen(dest)+strlen(filename)+11; // +11 pour "_gene_1.out"
+	    String fullfilename = (String)malloc((size + 1) * sizeof(char));
+	    sprintf(fullfilename, "%s%s%s%d.out", dest, filename, "_gene_", heuristique);
+		f = fopen(fullfilename, "w");
+		if (f == NULL)
+		{
+		    printf("Error opening file \"%s\"\n", fullfilename);
+		    exit(1);
+		} else printf("opening %s\n", fullfilename);
+	}
+
 	srand(time(NULL));
 	clock_t debut = clock();
 	double tempscourant = 0;
@@ -784,6 +796,12 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 			for(int k = 0; k < nbAretesSol; k++){
 				aretes[k] = aretesSol[k];
 			}
+			// ecriture de l'output
+			if(dest) {
+				tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+				//printf("write solution ..");
+				fprintf(f, "%f\t%d\n", tempscourant, sol);
+			}
 		}
 	}
 	gen++;
@@ -844,6 +862,11 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 					for(int k = 0; k < nbAretesSol; k++){
 						aretes[k] = aretesSol[k];
 					}
+					if(dest) {
+						tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+						//printf("write solution ..");
+						fprintf(f, "%f\t%d\n", tempscourant, sol);
+					}
 				}
 			}
 		}
@@ -854,6 +877,15 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 		gen++;
 
 	}while(maxTime == -1 || (clock() - debut) / (double)CLOCKS_PER_SEC < (double)maxTime);
+
+	//avant de fermer le fichier on écrit la dernière valeur
+	if(dest) {
+		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+		//printf("write solution ..");
+		fprintf(f, "%f\t%d\n", tempscourant, *valeurSolution);
+
+		fclose(f);
+	}
 
 
 	for(int i = 0; i < TAILLE_POPULATION * 2; i++)
@@ -874,11 +906,8 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filename,const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
 	FILE *f = NULL;
 	if(dest) {
-		int size = strlen(dest)+strlen(filename)+12; // "_local_1.out"
+		int size = strlen(dest)+strlen(filename)+12; // +12 pour "_local_1.out"
 	    String fullfilename = (String)malloc((size + 1) * sizeof(char));
-	    /*strcpy(fullfilename, dest);
-	    strcat(fullfilename, filename);
-	    strcat(fullfilename, "_local_");*/
 	    sprintf(fullfilename, "%s%s%s%d.out", dest, filename, "_local_", heuristique);
 		f = fopen(fullfilename, "w");
 		if (f == NULL)
@@ -934,7 +963,7 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filena
 		//printf("write solution ..");
 		fprintf(f, "%f\t%d\n", tempscourant, *valeurSolution);
 
-		 fclose(f);
+		fclose(f);
 	}
 }
 
@@ -1033,6 +1062,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 
 	int ameliore = 1; // bool
 	int gen = 0;
+	int bestoldval = 0;
 	int* newindividu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
 	while(ameliore) { // tant qu'on améliore la solution on continue
 		//si on à pas dépassé le temps imparti
@@ -1099,12 +1129,10 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 							//printf("write solution ..");
 							fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
 						}
-
 					}
 				}
 			}
 		}
-
 		// tester les solutions par élimination
 		for(int i = 0; i < g->nbNonTerminaux && !ameliore; i++) {
 			//printf("individu : "); printtabint(individu, g->nbNonTerminaux);
@@ -1117,6 +1145,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 				//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 				val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 				if(val < *valeurSolution) {
+					bestoldval = *valeurSolution;
 					//if(verbose && val < bestsol) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 					nbAretesSol = nbAretesSol;
 					*valeurSolution = val;
@@ -1131,10 +1160,8 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 					// ecriture de l'output
 					if(dest && val < bestsol) {
 						tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-						//printf("write solution ..");
-						fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
+						fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val); // écrit chaque amélioration
 					}
-
 				}
 			}
 		}
@@ -1146,3 +1173,17 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 	free(solutionfull);
 	free(poids_origines);
 }
+// écrit l'output en mode 'pas de temps' et complète si il manque des données (en mode histograme cumulé)
+void writeoutput(f, tempslancement, tempsprecedent, debut, oldbestval, newbestval) {
+	double tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+	double pas = 1; // 1 = 1 seconde
+	if(tempscourant > tempsprecedent + pas) { // si il est temps d'écrire
+		// si on à raté des étapes on rempli avec la dernière meilleure valeur
+		// TODO
+
+		// puis on ecrit la nouvelle meilleure valeur
+		fprintf(f, "%f\t%d\n", tempscourant, newbestval); 
+	}
+	//sinon on ecrit rien
+}
+
