@@ -306,7 +306,7 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 	//ac : compteur d'aretes
 	int ac = 0;
 	//pour la valeur des arretes il faut les PCC => dijkstra
-	for(int i = 0; i < g2->nbNoeuds; i++) {	
+	for(int i = 0; i < g2->nbNoeuds; i++) {
 
 		//dijkstra depuis le sommet i
 		dijkstra(g, g->terminaux[i]->id, /*out:*/ dist, prec[i]);
@@ -692,7 +692,7 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 		//on cherche les noeuds actifs dans l'ACPM
 		//int* noeudsactifs = (int)calloc(noeudmax, sizeof(int)); // 1 si le noeud est présent, 0 sinon
 		//reinitialise noeudsactifs
-		for(int i = 0; i < g->nbNoeuds; i++) 
+		for(int i = 0; i < g->nbNoeuds; i++)
 			noeudsactifs[i] = 0;
 
 		for (int i = 0 ; i < nbAretesSol; i++){
@@ -1032,7 +1032,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bes
 	int* individu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
 	int* solutionfull = (int*) calloc(g->nbNoeuds, sizeof(int));
 
-	////////////////////////////////
+	
     int* poids_origines = (int*)calloc(g->nbAretes, sizeof(int));
 	//on copie les valeurs des poids de g pour les remettre à la fin
 	for(int i = 0; i < g->nbAretes; i++){
@@ -1048,11 +1048,11 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bes
 	//printpoidsaretes(g);
 	// génération d'un individu depuis g
 	
-		//TODO: switcher de fonction avec un param
-	//!\\attention ces fonctions retournes un individu décris par TOUS les noeuds, il faut trier ensuite
+	//TODO: switcher de fonction avec un param
+	//!\\attention ces fonctions retournent un individu décrit par TOUS les noeuds, il faut trier ensuite
 	//generer_population_aleatoire(g, solutionfull, verbose);
-	generer_population_heuristique_PCC_one(g, solutionfull, verbose);
-	//generer_population_heuristique_ACPM_one(g, solutionfull, verbose);
+	//generer_population_heuristique_PCC_one(g, solutionfull, verbose);
+	generer_population_heuristique_ACPM_one(g, solutionfull, verbose);
 	//fin todo
 
 	//on remet les poids d'origine sur g
@@ -1129,7 +1129,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bes
 				//printf("test d'insertion du sommet %d\n", idcourant+1);
 				// aretes avec S
 				for(int i2 = 0; i2 < g->nbNonTerminaux; i2++) {
-					if(individu[i2] == 1) { // si c'est bien un sommet de S 
+					if(individu[i2] == 1) { // si c'est bien un sommet de S
 						int idpair = g->nonTerminaux[i2]->id; //recup son id
 						int valarete = isarete(g, idcourant, idpair);
 						//printf("\tarete entre %d et %d nonterminal ?? -> %d\n", idcourant+1, idpair+1, valarete);
@@ -1138,7 +1138,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bes
 				}
 
 				// aretes avec T
-				for(int i2 = 0; i2 < g->nbTerminaux; i2++) { // si c'est bien un sommet de T 
+				for(int i2 = 0; i2 < g->nbTerminaux; i2++) { // si c'est bien un sommet de T
 					int idpair = g->terminaux[i2]->id; //recup son id
 					int valarete = isarete(g, idcourant, idpair);
 					//printf("\tarete entre %d et %d terminal ?? -> %d\n", idcourant+1, idpair+1, valarete);

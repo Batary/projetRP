@@ -55,6 +55,11 @@ int main(int argc, const char *argv[])
         return EXIT_FAILURE;
     }
 
+    if(!local && !gene){
+		local = 1;
+		gene = 1;
+    }
+
     if(verbose) printf("Arguments : print = %d, verbose = %d, time = %d, file = %s, out = %s, local = %d, gene = %d\n", print, verbose, t, source, dest, local, gene);
     time = (double)t;	//Comptage en secondes
 

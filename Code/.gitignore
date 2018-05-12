@@ -3,6 +3,8 @@
 *.save
 
 *.exe*
+*.exe
+steiner.exe
 
 bin
 obj
