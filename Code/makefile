@@ -2,19 +2,19 @@
 all: main clean
 
 main: main.o graphe.o inout.o utils.o
-	gcc -o steiner.exe main.o graphe.o inout.o utils.o -std=c99
+	gcc -o steiner.exe main.o graphe.o inout.o utils.o -std=c99 -Wno-unused-variable -Wno-unused-parameter
 
 main.o: main.c
-	gcc -o main.o -c main.c -Wall -Wextra -O3 -std=c99
+	gcc -o main.o -c main.c -Wall -Wextra -O3 -std=c99 -Wno-unused-variable -Wno-unused-parameter
 
 graphe.o: graphe.c
-	gcc -o graphe.o -c graphe.c -Wall -Wextra -O3 -std=c99
+	gcc -o graphe.o -c graphe.c -Wall -Wextra -O3 -std=c99 -Wno-unused-variable -Wno-unused-parameter
 
 inout.o: inout.c
-	gcc -o inout.o -c inout.c -Wall -Wextra -O3 -std=c99
+	gcc -o inout.o -c inout.c -Wall -Wextra -O3 -std=c99 -Wno-unused-variable -Wno-unused-parameter
 	
 utils.o: utils.c
-	gcc -o utils.o -c utils.c -Wall -Wextra -O3 -std=c99
+	gcc -o utils.o -c utils.c -Wall -Wextra -O3 -std=c99 -Wno-unused-variable -Wno-unused-parameter
 
 .PHONY: clean
 

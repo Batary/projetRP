@@ -8,5 +8,5 @@ make
 
 
 # avec un dossier:
-# ./steiner.exe -print -verbose -time 10 -dir ../Instances/B/ -ouput ../Output -local -pop 1 -verbose
+# ./steiner.exe -print -verbose -time 10 -dir ../Instances/B/ -out ../Output/B/ -local -pop 1 -verbose
 

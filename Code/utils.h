@@ -27,5 +27,8 @@ void convertfulltopartiellesolution(graphe* g, int* solfull, int* solpartielle);
 
 void printtabint(int * tab, int size);
 
+void resetIndividu(graphe* g, int* indi);
+void copieIndividu(graphe* g, int* source, int* cible);
+
 #endif /* UTILS_H_ */
 
