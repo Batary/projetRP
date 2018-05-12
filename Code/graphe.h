@@ -10,4 +10,8 @@ void noeuds_steiner_gene(graphe* g, const int time, const int verbose, int* vale
 /// time = temps max alloue, verbose = affichage des donnees de debug
 void noeuds_steiner_local(graphe* g, const int time, const int verbose, int* valeurSolution, int* nbAretes, arete* aretes_sol);
 
+
+
+void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const int verbose);
+
 #endif /* GRAPHE_H_ */
