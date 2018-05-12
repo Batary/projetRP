@@ -120,7 +120,7 @@ int main(int argc, const char *argv[])
             if(opendir(dest)) {} else if (ENOENT == errno){
                 /* Directory does not exist. */
                 printf("error: output directory does not exist.\n");
-                return;
+                return EXIT_FAILURE;
             }
 
         }

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
+#include <string.h>
 
 #include "types.h"
 #include "graphe.h"
@@ -13,7 +14,15 @@
 */
 
 ///algorithme de kruskal
-int kruskal2(grapuds; i++){
+int kruskal2(graphe* g, int* solution,
+						/*constantes et tableaux conteneurs :*/ const int M, int* parents, int* rangs, arete* aretesTab,
+						/*sorties :*/ arete* aretesSol, int* nbAretesSol)
+{
+
+	int valeurSol = 0;
+	*nbAretesSol = 0; //nombre d'aretes du sous-graphe, doit etre egal au nombre de sommets - 1
+
+	for(int i = 0; i < g->nbNoeuds; i++){
 		parents[i] = i;
 	}
 
@@ -861,36 +870,23 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 	if(verbose){printf("\nNombre de generations au total : %d.\n", gen);}
 }
 
-//renvoi 1 si il existe une arete entre ces deux sommets, 0 sinon
-/*
-int isarete(graphe* g, int n1, int n2) {
-	for(int i = 0; i < g->nbAretes; i++) {
-		int noeud1 = g->aretes[i].noeud1->id;
-		int noeud2 = g->aretes[i].noeud2->id;
-
-		if(noeud1 == n1 && noeud2 == n2)
-			return 1;
-		if(noeud1 == n2 && noeud2 == n1)
-			return 1;
-	}
-	return 0; // rien trouvé
-}
-*/
-
 ///algo de recherche locale
 void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filename,const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
-	int size = strlen(dest)+strlen(filename)+strlen("_local_1.out");
-    String fullfilename = (String)malloc((size + 1) * sizeof(char));
-    /*strcpy(fullfilename, dest);
-    strcat(fullfilename, filename);
-    strcat(fullfilename, "_local_");*/
-    sprintf(fullfilename, "%s%s%s%d.out", dest, filename, "_local_", heuristique);
-	FILE *f = fopen(fullfilename, "w");
-	if (f == NULL)
-	{
-	    printf("Error opening file \"%s\"\n", fullfilename);
-	    exit(1);
-	} else printf("opening %s\n", fullfilename);
+	FILE *f = NULL;
+	if(dest) {
+		int size = strlen(dest)+strlen(filename)+12; // "_local_1.out"
+	    String fullfilename = (String)malloc((size + 1) * sizeof(char));
+	    /*strcpy(fullfilename, dest);
+	    strcat(fullfilename, filename);
+	    strcat(fullfilename, "_local_");*/
+	    sprintf(fullfilename, "%s%s%s%d.out", dest, filename, "_local_", heuristique);
+		f = fopen(fullfilename, "w");
+		if (f == NULL)
+		{
+		    printf("Error opening file \"%s\"\n", fullfilename);
+		    exit(1);
+		} else printf("opening %s\n", fullfilename);
+	}
 
 	srand(time(NULL));
 	clock_t debut = clock();
@@ -933,11 +929,13 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filena
 	free(aretesTemp);
 
 	//avant de fermer le fichier on écrit la dernière valeur
-	tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-	//printf("write solution ..");
-	fprintf(f, "%f\t%d\n", tempscourant, *valeurSolution);
+	if(dest) {
+		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+		//printf("write solution ..");
+		fprintf(f, "%f\t%d\n", tempscourant, *valeurSolution);
 
-	fclose(f);
+		 fclose(f);
+	}
 }
 
 // fait une seule recherche locale
