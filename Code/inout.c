@@ -25,7 +25,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 
 		//creation des noeuds
         if(!strcmp(line,"Nodes") && fscanf(f, "%d", &val) == 1){
-			if(verbose) printf("%d ", val);
+			if(verbose) printf("%d", val);
 			g->nbNoeuds = val;
 			g->noeuds = (noeud*)calloc(val,sizeof(noeud));
 			for(int i = 0; i<val; i++){
@@ -36,7 +36,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 
         //creation des aretes
         else if(!strcmp(line,"Edges") && fscanf(f, "%d", &val) == 1){
-			if(verbose) printf("%d ", val);
+			if(verbose) printf("%d", val);
 			g->nbAretes = val;
 			g->aretes = (arete*)calloc(val,sizeof(arete));
         }
@@ -63,7 +63,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 
         //ajout des noeuds terminaux
         else if(!strcmp(line,"Terminals") && fscanf(f, "%d", &val) == 1){
-			if(verbose) printf("%d ", val);
+			if(verbose) printf("%d", val);
 			g->nbTerminaux = val;
 			g->terminaux = (noeud**)calloc(val, sizeof(noeud*));
 
@@ -73,7 +73,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 
         //lecture de la valeur des noeuds terminaux
         else if(!strcmp(line,"T") && fscanf(f, "%d", &val) == 1){
-			if(verbose) printf("%d ", val);
+			if(verbose) printf("%d", val);
 			val--;
 			g->noeuds[val].est_terminal = 1;
 			g->terminaux[tc] = &g->noeuds[val];
