@@ -942,6 +942,7 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 }
 
 //renvoi 1 si il existe une arete entre ces deux sommets, 0 sinon
+/*
 int isarete(graphe* g, int n1, int n2) {
 	for(int i = 0; i < g->nbAretes; i++) {
 		int noeud1 = g->aretes[i].noeud1->id;
@@ -954,6 +955,21 @@ int isarete(graphe* g, int n1, int n2) {
 	}
 	return 0; // rien trouvé
 }
+*/
+//renvoi 1 si il existe une arete entre ces deux sommets, 0 sinon
+// version optimisée
+int isarete(graphe* g, int n1, int n2) {
+	for(int i = 0; i < g->noeuds[n1].nbAretes; i++) {
+		int noeud1 = g->noeuds[n1].aretes[i]->noeud1->id;
+		int noeud2 = g->noeuds[n1].aretes[i]->noeud2->id;
+		if(noeud1 == n1 && noeud2 == n2)
+			return 1;
+		if(noeud1 == n2 && noeud2 == n1)
+			return 1;
+	}
+	return 0; // rien trouvé
+}
+
 
 //converti un encodage des sommmets non-terminaux en une solution de taille g->nbnoeuds
 void convertpartielletofullsolution(graphe* g,int* solS, int* solfull){
