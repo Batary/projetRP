@@ -710,7 +710,7 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 
 
 ///algo genetique
-void noeuds_steiner_gene(graphe* g, int heuristique, String dest, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
+void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
 {
 	srand(time(NULL));
 	clock_t debut = clock();
@@ -886,11 +886,24 @@ int isarete(graphe* g, int n1, int n2) {
 */
 
 ///algo de recherche locale
-void noeuds_steiner_local(graphe* g, int heuristique, String dest, const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filename,const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+	int size = strlen(dest)+strlen(filename)+strlen("_local_1.out");
+    String fullfilename = (String)malloc((size + 1) * sizeof(char));
+    /*strcpy(fullfilename, dest);
+    strcat(fullfilename, filename);
+    strcat(fullfilename, "_local_");*/
+    sprintf(fullfilename, "%s%s%s%d.out", dest, filename, "_local_", heuristique);
+	FILE *f = fopen(fullfilename, "w");
+	if (f == NULL)
+	{
+	    printf("Error opening file \"%s\"\n", fullfilename);
+	    exit(1);
+	} else printf("opening %s\n", fullfilename);
+
 	srand(time(NULL));
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
-	int tempsrestant = maxTime;
+	double tempsrestant = maxTime;
 	double tempscourant = 0;
 	double alea = 0.2; // 0.2 = 20%
 	int gen = 0;
@@ -901,10 +914,11 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest, const int max
 	arete* aretesTemp = (arete*) calloc(g->nbAretes, sizeof(arete));
 
 	while(tempsrestant > 0) {
+		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
 		if(gen == 0) // alea de 0 pour le premier
-			noeuds_steiner_local_one(g, heuristique, tempsrestant, 0, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
+			noeuds_steiner_local_one(g, heuristique, dest, filename,f, tempscourant, tempsrestant, 0, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
 		else
-			noeuds_steiner_local_one(g, heuristique, tempsrestant, alea, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
+			noeuds_steiner_local_one(g, heuristique, dest, filename,f, tempscourant, tempsrestant, alea, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
 		gen++;
 		//si meilleure solution on met à jour
 		if(valeurSolutionTemp < *valeurSolution) {
@@ -926,9 +940,20 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest, const int max
 
 	free(aretesTemp);
 
+	//avant de fermer le fichier on écrit la dernière valeur
+	tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+	//printf("write solution ..");
+	fprintf(f, "%f\t%d\n", tempscourant, *valeurSolution);
+
+	fclose(f);
 }
+
 // fait une seule recherche locale
-void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, double alea, int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String filename, FILE *f,double tempslancement, const double maxTime, double alea, int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+
+	double tempscourant;
+	tempscourant = 0;
+
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
 	//double alea = 0; // 0.2 = 20%
@@ -999,6 +1024,14 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 		aretes[k] = aretesSol[k];
 	}
 	//fin return de base
+
+	// ecriture de l'output
+	if(dest && (val < bestsol || val < *valeurSolution)) {
+		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+		//printf("write solution .. ");
+		fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
+		*valeurSolution = val;
+	}
 
 /*
 	printf("cet individu donne une solution de %d aretes et de coût %d:\n", nbAretesSol, val);
@@ -1079,6 +1112,12 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 						gen++;
 						ameliore = 1;
 						copieIndividu(newindividu, individu); //copie newindividu dans individu
+						// ecriture de l'output
+						if(dest && val < bestsol) {
+							tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+							//printf("write solution ..");
+							fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
+						}
 					}
 				}
 			}
@@ -1106,6 +1145,12 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime, dou
 					gen++;
 					ameliore = 1;
 					copieIndividu(newindividu, individu); //copie newindividu dans individu
+					// ecriture de l'output
+					if(dest && val < bestsol) {
+						tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+						//printf("write solution ..");
+						fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
+					}
 				}
 			}
 		}
