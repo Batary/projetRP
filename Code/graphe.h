@@ -14,6 +14,12 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest,String filenam
 
 void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const int verbose);
 
-void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String filename,FILE *f, double tempslancement, const double maxTime,double alea,int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes);
+void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String filename,FILE *f, double tempslancement, const double maxTime,double alea,int bestsol, const int verbose,
+/*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes, int* lastvalwritten, int* lasttimewritten);
+
+
+void writeoutput(FILE* f, double tempslancement, double* tempsprecedent, double debut, int *oldbestval,
+	int newbestval, int* lastvalwritten, int* lasttimewritten);
+
 
 #endif /* GRAPHE_H_ */

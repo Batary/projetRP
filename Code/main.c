@@ -140,7 +140,7 @@ int main(int argc, const char *argv[])
     }
     if(heuristique == 0) {
         heuristique = 1; // heuristique par défaut
-        printf("Pas d'heuristique choisie, choix par défaut de l'heuristique %d.\n1 = aleatoire\n2 = Plus Court Chemin (PCC)\n3 = Arbre Couvrant de Poids Minimum (ACPM)", heuristique);
+        printf("Pas d'heuristique choisie, choix par défaut de l'heuristique %d.\n1 = aleatoire\n2 = Plus Court Chemin (PCC)\n3 = Arbre Couvrant de Poids Minimum (ACPM)\n", heuristique);
     }
 
     if(!local && !gene){
