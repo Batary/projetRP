@@ -4,6 +4,7 @@
 
 *.save
 
+*.o
 *.exe*
 *.exe
 steiner.exe
