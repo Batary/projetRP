@@ -4,16 +4,16 @@
 
 ///trouve un arbre de steiner avec un algo genetique
 /// time = temps max alloue, verbose = affichage des donnees de debug
-void noeuds_steiner_gene(graphe* g, const int time, const int verbose, int* valeurSolution, int* nbAretes, arete* aretes_sol);
+void noeuds_steiner_gene(graphe* g, int heuristique, const int time, const int verbose, int* valeurSolution, int* nbAretes, arete* aretes_sol);
 
 ///trouve un arbre de steiner avec une recherche locale
 /// time = temps max alloue, verbose = affichage des donnees de debug
-void noeuds_steiner_local(graphe* g, const int time, const int verbose, int* valeurSolution, int* nbAretes, arete* aretes_sol);
+void noeuds_steiner_local(graphe* g, int heuristique, const int time, const int verbose, int* valeurSolution, int* nbAretes, arete* aretes_sol);
 
 
 
 void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const int verbose);
 
-void noeuds_steiner_local_one(graphe* g, const int maxTime,double alea,int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes);
+void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime,double alea,int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes);
 
 #endif /* GRAPHE_H_ */
