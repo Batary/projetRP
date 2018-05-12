@@ -14,6 +14,6 @@ void noeuds_steiner_local(graphe* g, const int time, const int verbose, int* val
 
 void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const int verbose);
 
-void noeuds_steiner_local_one(graphe* g, const int maxTime,double alea, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes);
+void noeuds_steiner_local_one(graphe* g, const int maxTime,double alea,int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes);
 
 #endif /* GRAPHE_H_ */

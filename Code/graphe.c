@@ -556,7 +556,7 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 	puts("");
 */
 
-	printf("\tindividu généré de valeur %d\n",valsol);
+	//if(verbose) printf("\tindividu généré de valeur %d\n",valsol);
 	//on copie la solution dans noeudsactifs
 	for(int i = 0; i < g->nbNoeuds; i++)
 		noeudsactifs[i] = !!solution[i]; // !! renvoi 0 si 0 et 1 si >=1
@@ -669,7 +669,7 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 
 		int val = kruskal_partiel(g, solutionPartielle, /*sorties :*/ aretesSol, &nbAretesSol);
 		if(verbose){
-			 printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
+			//printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
 			/*for(int i=0; i< nbAretesSol; i++) {
 				printf("%d %d %d terminal? %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids, aretesSol[i].noeud1->est_terminal, aretesSol[i].noeud2->est_terminal);
 			}*/
@@ -754,6 +754,7 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 					population[i][j] = noeudsactifs[g->nonTerminaux[j]->id];
 				}
 			}*/
+			/*
 			int coutacpm = 0;
 			printf("aretessol poids :");
 			for (int i = 0 ; i < nbAretesSol; i++){
@@ -762,6 +763,7 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 			}
 			puts("");
 			if(verbose) printf("heuristique ACPM: individu de coût %d. \n", coutacpm);
+			*/
 			return; // on à retourner l'arbre obtenu dans population donc on sort
 		}
 		//on boucle via le while(1)
@@ -999,9 +1001,9 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 
 	while(tempsrestant > 0) {
 		if(gen == 0) // alea de 0 pour le premier
-			noeuds_steiner_local_one(g, tempsrestant, 0, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
+			noeuds_steiner_local_one(g, tempsrestant, 0, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
 		else
-			noeuds_steiner_local_one(g, tempsrestant, alea, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
+			noeuds_steiner_local_one(g, tempsrestant, alea, *valeurSolution, verbose, /*sorties :*/ &valeurSolutionTemp, &nbAretesTemp, aretesTemp);
 		gen++;
 		//si meilleure solution on met à jour
 		if(valeurSolutionTemp < *valeurSolution) {
@@ -1011,6 +1013,7 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 			for(int k = 0; k < nbAretesTemp; k++){
 				aretes[k] = aretesTemp[k];
 			}
+			if(verbose) printf("\tAmelioration trouvee de valeur %d .\n", valeurSolutionTemp);
 		}
 		//recalcule du temps restant
 		tempscourrant = (clock() - debut) / (double)CLOCKS_PER_SEC;
@@ -1020,7 +1023,7 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 	}
 }
 // fait une seule recherche locale
-void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
 	//double alea = 0; // 0.2 = 20%
@@ -1153,7 +1156,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, const i
 					val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 					//printf("kruskal : %d\n", val);
 					if(val < *valeurSolution) {
-						if(verbose) printf("\tAmelioration trouvee (par insertion de l'arête %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
+						if(verbose && val < bestsol) printf("\tAmelioration trouvee (par insertion de l'arête %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 						nbAretesSol = nbAretesSol;
 						*valeurSolution = val;
 						*nbAretes = nbAretesSol;
@@ -1180,7 +1183,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, const i
 				//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 				val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 				if(val < *valeurSolution) {
-					if(verbose) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
+					if(verbose && val < bestsol) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 					nbAretesSol = nbAretesSol;
 					*valeurSolution = val;
 					*nbAretes = nbAretesSol;
