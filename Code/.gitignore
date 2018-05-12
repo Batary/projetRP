@@ -3,6 +3,7 @@
 *.save
 
 *.exe*
+*.exe
 
 bin
 obj
