@@ -21,7 +21,7 @@ graphe* lireFichier(const String fichier, const int verbose)
 
     while((ret = fscanf (f,"%s", line)) != EOF && ret == 1)
     {
-        if(verbose) printf("%s ", line);
+
 
 		//creation des noeuds
         if(!strcmp(line,"Nodes") && fscanf(f, "%d", &val) == 1){
@@ -79,8 +79,9 @@ graphe* lireFichier(const String fichier, const int verbose)
 			g->terminaux[tc] = &g->noeuds[val];
 			tc++;
         }
-
-        if(verbose) puts("");
+        else continue;
+		if(verbose) printf(" %s\n", line);
+        //if(verbose) puts("");
     }
 
     //ajout de la liste de noeuds non terminaux

@@ -111,14 +111,9 @@ int main(int argc, const char *argv[])
 		}
 	}
 
-//Code commenté extrait d'un solveur de sudoku que j'ai fait l'annee derniere, qu'on pourra reutiliser
-
-    /*
-    	if(ecrireGrilles(DEST, grilles, i) == -1){
-    		printf("ERREUR ! Impossible d'ecrire dans le fichier \"%s\" ! \n", DEST);
-    		return EXIT_FAILURE;
-    	}
-    	*/
+	free(source);
+	free(solution);
+	freeGraphe(g);
 
     puts("Programme termine avec succes. \n");
     return EXIT_SUCCESS;

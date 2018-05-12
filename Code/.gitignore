@@ -1,4 +1,6 @@
-.directory
+*.directory
+
+*.layout
 
 *.save
 

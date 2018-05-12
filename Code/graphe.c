@@ -13,6 +13,20 @@
 	NOTE : tous les indices sont decales de -1 par rapport au fichier d'entree.
 */
 
+void freeGraphe(graphe* g){
+
+	for(int i = 0; i < g->nbNoeuds; i++)
+	{
+		free(g->noeuds[i].aretes);
+	}
+
+    free(g->terminaux);
+    free(g->nonTerminaux);
+    free(g->aretes);
+	free(g->noeuds);
+	free(g);
+}
+
 double generer_uniforme(double x, double y){
 	return ( rand()/(double)RAND_MAX ) * (y-x) + x;
 }
@@ -188,6 +202,7 @@ int kruskal_partiel(graphe* g,int* solutionPartielle, /*sorties :*/ arete* arete
 	puts("");
 
 */
+	free(aretesTab);
 	free(parents);
 	free(rangs);
 
@@ -274,6 +289,7 @@ void dijkstra(graphe* g, int depart, /*out:*/ int* dist, int* prec){
 			}
 		}
 	}
+	free(Q);
 }
 
 void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const int verbose){
@@ -555,25 +571,47 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 		printf("%d  ",!!solution[j]);
 	puts("");
 */
-
 	printf("\tindividu généré de valeur %d\n",valsol);
 	//on copie la solution dans noeudsactifs
 	for(int i = 0; i < g->nbNoeuds; i++)
-		noeudsactifs[i] = !!solution[i]; // !! renvoi 0 si 0 et 1 si >=1
+		noeudsactifs[i] = !!solution[i]; // !! renvoie 0 si 0 et 1 si != 0
+
+	//liberation memoire
+
+	free(aretesSol);
+	free(aretesSol2);
+	free(g3_to_g);
+	free(g_to_g3);
+	free(solution);
+	free(dist);
+
+	for(int i=0; i < g->nbNoeuds; i++){
+		free(prec[i]);
+	}
+	free(prec);
+
+	freeGraphe(g2);
+	freeGraphe(g3);
+
 }
 
 
 void generer_population_heuristique_PCC(graphe* g, int** population, double alea, const int verbose){
 	if(verbose) printf("\n** génération de population via heuristique 1 (PCC) **\n");
-	int* poids_origines = (int*)calloc(g->nbAretes, sizeof(int));
+	int* poids_origines;
+	poids_origines = (int*)calloc(g->nbAretes, sizeof(int));
+
 	//on copie les valeurs des poids de g pour les remettre à la fin
 	for(int i = 0; i < g->nbAretes; i++){
 		poids_origines[i] = g->aretes[i].poids;
 	}
 	//printpoidsaretes(g);
 
+	int* noeudsactifs = (int*)calloc(g->nbNoeuds, sizeof(int)); // 1 si le noeud est présent, 0 sinon
 	for(int i = 0; i < TAILLE_POPULATION * 2; i++){
-		int* noeudsactifs = (int*)calloc(g->nbNoeuds, sizeof(int)); // 1 si le noeud est présent, 0 sinon
+		for(int j = 0; j < g->nbNoeuds; j++){
+			noeudsactifs[j] = 0;
+		}
 		//modification aleatoire de g
 		// printf(">>> %f\n", generer_uniforme(-alea, alea));
 		for(int k = 0; k < g->nbAretes; k++){
@@ -602,6 +640,9 @@ void generer_population_heuristique_PCC(graphe* g, int** population, double alea
 	}
 	//printpoidsaretes(g);
 
+	free(noeudsactifs);
+	free(poids_origines);
+
 	if(verbose) printf("*** population via heuristique PCC terminée. ***\n\n");
 }
 
@@ -622,8 +663,11 @@ void generer_population_heuristique_ACPM(graphe* g, int** population, double ale
 	}
 	//printpoidsaretes(g);
 
-	for(int i = 0; i < TAILLE_POPULATION * 2; i++){
 		int* noeudsactifs = (int*)calloc(g->nbNoeuds, sizeof(int)); // 1 si le noeud est présent, 0 sinon
+	for(int i = 0; i < TAILLE_POPULATION * 2; i++){
+		for(int j = 0; j < g->nbNoeuds; j++){
+			noeudsactifs[j] = 0;
+		}
 		//modification aleatoire de g
 		// printf(">>> %f\n", generer_uniforme(-alea, alea));
 		for(int k = 0; k < g->nbAretes; k++){
@@ -651,6 +695,10 @@ void generer_population_heuristique_ACPM(graphe* g, int** population, double ale
 	}
 	//printpoidsaretes(g);
 
+	free(noeudsactifs);
+	free(poids_origines);
+
+
 	if(verbose) printf("*** population via heuristique ACPM terminée. ***\n\n");
 }
 void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const int verbose){
@@ -662,9 +710,9 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 		solutionPartielle[i] = 1;
 	}
 
+	arete* aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
 	while (1) { // quand on aura fini on fera un return
 		//kruskal pour ACPM
-		arete* aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
 		int nbAretesSol = 0;
 
 		int val = kruskal_partiel(g, solutionPartielle, /*sorties :*/ aretesSol, &nbAretesSol);
@@ -762,10 +810,17 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 			}
 			puts("");
 			if(verbose) printf("heuristique ACPM: individu de coût %d. \n", coutacpm);
-			return; // on à retourner l'arbre obtenu dans population donc on sort
+
+			free(solutionPartielle);
+			free(aretesSol);
+			return; // on retourne l'arbre obtenu dans la population --> on sort
 		}
 		//on boucle via le while(1)
 	}
+
+	free(solutionPartielle);
+    free(aretesSol);
+
 }
 
 
@@ -936,6 +991,18 @@ void noeuds_steiner_gene(graphe* g, const int maxTime, const int verbose, /*sort
 
 	}while(maxTime == -1 || (clock() - debut) / (double)CLOCKS_PER_SEC < (double)maxTime);
 
+
+	for(int i = 0; i < TAILLE_POPULATION * 2; i++)
+		free(population[i]);
+	free(population);
+
+	free(aretesSol);
+	free(aretesTab);
+	free(solutionActuelle);
+	free(parents);
+	free(rangs);
+	free(solutions);
+
 	if(verbose){printf("\nNombre de generations au total : %d.\n", gen);}
 }
 
@@ -988,7 +1055,7 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
 	int tempsrestant = maxTime;
-	int tempscourrant = 0;
+	int tempscourant = 0;
 	double alea = 0.2; // 0.2 = 20%
 	int gen = 0;
 
@@ -1013,11 +1080,14 @@ void noeuds_steiner_local(graphe* g, const int maxTime,const int verbose, /*sort
 			}
 		}
 		//recalcule du temps restant
-		tempscourrant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-		tempsrestant = maxTime - tempscourrant;
+		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+		tempsrestant = maxTime - tempscourant;
 		//si le temps est dépassé on quitte
 		if(maxTime > -1 && (clock() - debut) / (double)CLOCKS_PER_SEC > (double)maxTime) break;
 	}
+
+	free(aretesTemp);
+
 }
 // fait une seule recherche locale
 void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
@@ -1029,7 +1099,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, const i
 	int* individu = (int*) calloc(g->nbNonTerminaux, sizeof(int));
 	int* solutionfull = (int*) calloc(g->nbNoeuds, sizeof(int));
 
-	
+
     int* poids_origines = (int*)calloc(g->nbAretes, sizeof(int));
 	//on copie les valeurs des poids de g pour les remettre à la fin
 	for(int i = 0; i < g->nbAretes; i++){
@@ -1044,7 +1114,7 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, const i
 	}
 	//printpoidsaretes(g);
 	// génération d'un individu depuis g
-	
+
 	//TODO: switcher de fonction avec un param
 	//!\\attention ces fonctions retournent un individu décrit par TOUS les noeuds, il faut trier ensuite
 	//generer_population_aleatoire(g, solutionfull, verbose);
@@ -1194,4 +1264,10 @@ void noeuds_steiner_local_one(graphe* g, const int maxTime, double alea, const i
 			}
 		}
 	}
+
+	free(newindividu);
+	free(aretesSol);
+	free(individu);
+	free(solutionfull);
+	free(poids_origines);
 }
