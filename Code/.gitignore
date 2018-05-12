@@ -1,7 +1,7 @@
 *.directory
 
 *.layout
-
+*.depend
 *.save
 
 *.o

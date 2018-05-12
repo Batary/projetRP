@@ -8,6 +8,7 @@
 #include "inout.h"
 #include "graphe.h"
 #include "types.h"
+#include "utils.h"
 
 /**
 Options actuellement disponibles :

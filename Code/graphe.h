@@ -16,6 +16,4 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 
 void noeuds_steiner_local_one(graphe* g, int heuristique, const int maxTime,double alea,int bestsol, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes);
 
-void freeGraphe(graphe* g);
-
 #endif /* GRAPHE_H_ */
