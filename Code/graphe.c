@@ -829,7 +829,7 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 
 
 ///algo genetique
-void noeuds_steiner_gene(graphe* g, int heuristique, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
+void noeuds_steiner_gene(graphe* g, int heuristique, String dest, const int maxTime, const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes)
 {
 	srand(time(NULL));
 	clock_t debut = clock();
@@ -1076,7 +1076,7 @@ void printtabint(int * tab, int size){
 //
 
 ///algo de recherche locale (relance si le temps est pas atteint)
-void noeuds_steiner_local(graphe* g, int heuristique, const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
+void noeuds_steiner_local(graphe* g, int heuristique, String dest, const int maxTime,const int verbose, /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes){
 	srand(time(NULL));
 	clock_t debut = clock();
 	*valeurSolution = INT_MAX;	//meilleure solution
