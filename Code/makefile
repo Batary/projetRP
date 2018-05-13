@@ -38,4 +38,7 @@ inout.od: inout.c
 utils.od: utils.c
 	gcc -o utils.o -c utils.c -Wall -Wextra -g -std=c99
 
+script: script.o
+	gcc -o script.exe script.o -std=c99 -Wno-unused-variable -Wno-unused-parameter
+
 
