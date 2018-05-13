@@ -1,0 +1,7 @@
+#aller dans le dossier, par exemple Output/C/
+
+#tail -n 1 c??.stp_gene_1.out | grep "^[0-9]" > temp1.txt
+
+#cut -f 2 temp1.txt 
+
+#on obtient la colonne voulue
