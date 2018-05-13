@@ -1011,7 +1011,7 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filena
 
 	printf("fini, lastvalwritten = %d\n", lastvalwritten);
 	//si on à trouvé mieux mais qu'on la pas encore écrit on le rajoute avant de fermer le fichier
-	if(dest && *valeurSolution < lastvalwritten) {
+	if(dest && *valeurSolution <= lastvalwritten) {
 		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
 
 		// si on à raté des étapes on rempli avec la dernière meilleure valeur
@@ -1020,15 +1020,15 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filena
 			//printf("tempscourant = %d,  tempsprecedent=%d, il faut rattraper.\n", (int)tempscourant, (int)*tempsprecedent);
 			double variation = tempscourant - (lasttimewritten + pas );
 			//printf("variation: %d seconde(s) à rattraper\n", (int)variation);
-			for(int i = (int)lasttimewritten+1; i < (int)(tempscourant ); i++) {
+			for(int i = (int)lasttimewritten+1; i < (int)(tempscourant +1); i++) {
 				printf("write %d\t%d\n", i, *valeurSolution);
 				fprintf(f, "%d\t%d\n", i, *valeurSolution);
 			}
 		}
 
 		//printf("write solution ..");
-		fprintf(f, "%d\t%d\n", (int)tempscourant, *valeurSolution);
-		printf("write %d\t%d\n", (int)(tempscourant), *valeurSolution);
+		//fprintf(f, "%d\t%d\n", (int)tempscourant, *valeurSolution);
+		//printf("write %d\t%d\n", (int)(tempscourant), *valeurSolution);
 		fclose(f);
 	}
 }
