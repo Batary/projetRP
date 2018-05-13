@@ -18,8 +18,4 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 /*sorties :*/ int* valeurSolution, int* nbAretes, arete* aretes, int* lastvalwritten, int* lasttimewritten);
 
 
-void writeoutput(FILE* f, double tempslancement, double* tempsprecedent, double debut, int *oldbestval,
-	int newbestval, int* lastvalwritten, int* lasttimewritten);
-
-
 #endif /* GRAPHE_H_ */

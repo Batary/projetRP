@@ -4,5 +4,7 @@
 
 graphe* lireFichier(const String fichier, const int verbose);
 
+void writeoutput(FILE* f, double tempslancement, double* tempsprecedent, double debut, int *oldbestval,
+	int newbestval, int* lastvalwritten, int* lasttimewritten);
 
 #endif /* INOUT_H_ */

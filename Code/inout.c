@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "types.h"
 
@@ -117,6 +118,46 @@ graphe* lireFichier(const String fichier, const int verbose)
 
 //NOTE : tous les indices sont decales de -1 par rapport au fichier d'entree.
 //A ne pas oublier a la sortie.
+
+
+// écrit l'output en mode 'pas de temps' et complète si il manque des données (en mode histograme cumulé)
+void writeoutput(FILE* f, double tempslancement, double* tempsprecedent, double debut,
+	int* oldbestval, int newbestval, int* lastvalwritten, int* lasttimewritten) {
+	double tempscourant = ((clock() - debut) / (double)CLOCKS_PER_SEC) + tempslancement;
+	int pas = 1; // 1 = 1 seconde //todo: passer en double pour permettre des pas de 0.5 par exemple ?
+	//printf("if( %f >= (int)(%f + %d) ) ? --> ", tempscourant, *tempsprecedent, pas);
+	//printf("if( %f >= (int)(%d + %d) ) ? --> ", tempscourant, *lasttimewritten, pas);
+	// TODO :si on veut un pas en double: tronquer avec le modulo avec le pas de temps au lieu de caster en int
+
+	// on test si il est temps d'écrire
+	//if(((int)tempscourant) >= (int)(*tempsprecedent + pas) || *lastvalwritten == -1) {  // *lastvalwritten == -1 -> force 1ere ecriture
+	if(((int)tempscourant) >= (int)(*lasttimewritten + pas) || *lastvalwritten == -1) {  // *lastvalwritten == -1 -> force 1ere ecriture
+		//printf(" *OUI* \n");
+		// si on à raté des étapes on remplit avec la dernière meilleure valeur
+		//if( ((int)tempscourant) - (int)(*tempsprecedent + pas) > 0) {
+		if( ((int)tempscourant) - (int)(*lasttimewritten + pas) > 0) {
+			//printf("tempscourant = %d,  tempsprecedent=%d, il faut rattraper.\n", (int)tempscourant, (int)*tempsprecedent);
+			//double variation = tempscourant - (*tempsprecedent + pas );
+			double variation = tempscourant - (*lasttimewritten + pas );
+			//printf("variation: %d seconde(s) à rattraper\n", (int)variation);
+			//for(int i = (int)*tempsprecedent + pas; i <= (int)(tempscourant - pas /*+ 1*/); i+=pas) {
+			for(int i = (int)*lasttimewritten + pas; i <= (int)(tempscourant - pas /*+ 1*/); i+=pas) {
+				//printf("write %d \t %d\n", (int)(i+tempslancement), *oldbestval);
+				//fprintf(f, "%d \t %d\n", (int)(i+tempslancement), *oldbestval);
+				printf("write %d \t %d\n", (int)(i), *oldbestval);
+				fprintf(f, "%d \t %d\n", (int)(i), *oldbestval);
+			}
+		}
+		// puis on ecrit la nouvelle meilleure valeur
+		fprintf(f, "%d \t %d\n", (int)(tempscourant), newbestval);
+		printf("write %d \t %d\n", (int)(tempscourant), newbestval);
+		*tempsprecedent = (int)tempscourant;
+		*oldbestval = newbestval;
+		*lastvalwritten = newbestval;
+		*lasttimewritten = (int)(tempscourant);
+	} //else printf(" NON \n");
+	//sinon on ecrit rien
+}
 
 
 
