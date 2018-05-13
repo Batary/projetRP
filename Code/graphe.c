@@ -376,20 +376,6 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 
 	/*int valsol = */ kruskal(g3, /*sorties :*/ aretesSol2, &nbAretesSol);
 
-
-/*
-	int s = 0;
-	for(int i = 0; i<g->nbNoeuds; i++){
-		s+=g->noeuds[i].nbAretes;
-	}
-	printf("nb aretes g3 : %d \t nb aretes solution : %d \t c : %d\n",g3->nbAretes, nbAretesSol,s/2);
-
-	puts("solution (arbre G4) :");
-	for(int i = 0; i<nbAretesSol; i++){
-		printf("(%d %d)\n", g3_to_g[aretesSol2[i].noeud1->id]+1, g3_to_g[aretesSol2[i].noeud2->id]+1);
-	}
-*/
-
 	for(int i = 0; i<nbAretesSol; i++){
 		//if(!g->noeuds[g3_to_g[aretesSol2[i].noeud1->id]].est_terminal)
 			solution[g3_to_g[aretesSol2[i].noeud1->id]] ++;
@@ -433,36 +419,6 @@ void generer_population_heuristique_PCC_one(graphe* g,  int* noeudsactifs, const
 
 		}
 	}
-
-	/*
-	puts("solution : ");
-	for(int i = 0; i < g->nbNoeuds; i++)
-		printf("%d  ", !!solution[i]); // !! renvoi 0 si 0 et 1 si >=1
-	puts("");
-	*/
-/*
-	for(int i = 0; i < TAILLE_POPULATION * 2; i++){
-		int c = 0;
-		for(int j = 0; j < g->nbNoeuds; j++){
-			if(!g->noeuds[j].est_terminal) {
-				population[i][c] =  !!solution[j];
-				c++;
-			}
-		}
-		//0 1 0 1 sur l'exemple
-		printf("individu:\t");
-		for(int j = 0; j < g->nbNonTerminaux; j++)
-			printf("%d  ",population[i][j]);
-		puts("");
-	}
-*/
-/*
-	//0 1 0 1 sur l'exemple (ou 1  0  1  0  1  1  1 si on affiche tout)
-	printf("\tindividu: ");
-	for(int j = 0; j < g->nbNoeuds; j++)
-		printf("%d  ",!!solution[j]);
-	puts("");
-*/
 
 	//if(verbose) printf("\tindividu généré de valeur %d\n",valsol);
 	//on copie la solution dans noeudsactifs
@@ -510,18 +466,10 @@ void generer_population_heuristique_PCC(graphe* g, int** population, double alea
 		for(int k = 0; k < g->nbAretes; k++){
 			g->aretes[k].poids = poids_origines[k] + poids_origines[k] * generer_uniforme(-alea, alea);
 		}
-		//printtabint(g->aretes);
-		//printpoidsaretes(g);
+
 		// génération d'un individu depuis g
 		generer_population_heuristique_PCC_one(g, noeudsactifs, verbose);
-		// affichage des noeuds actifs
-		/*	printf("noeuds actifs : ");
-			for(int i = 0; i < g->nbNoeuds; i++){
-				printf("%d ", noeudsactifs[i]);
-			}
-			puts("\n");
-			*/
-		//fin affichage
+
 		//on copie cet individu dans la population
 		for(int j = 0; j < g->nbNonTerminaux; j++){
 			population[i][j] = noeudsactifs[g->nonTerminaux[j]->id];
@@ -566,17 +514,10 @@ void generer_population_heuristique_ACPM(graphe* g, int** population, double ale
 		for(int k = 0; k < g->nbAretes; k++){
 			g->aretes[k].poids = poids_origines[k] + poids_origines[k] * generer_uniforme(-alea, alea);
 		}
-		//printpoidsaretes(g);
+
 		// génération d'un individu depuis g
 		generer_population_heuristique_ACPM_one(g, noeudsactifs, verbose);
-		// affichage des noeuds actifs
-		/*	printf("noeuds actifs : ");
-			for(int i = 0; i < g->nbNoeuds; i++){
-				printf("%d ", noeudsactifs[i]);
-			}
-			puts("\n");
-			*/
-		//fin affichage
+
 		//on copie cet individu dans la population
 		for(int j = 0; j < g->nbNonTerminaux; j++){
 			population[i][j] = noeudsactifs[g->nonTerminaux[j]->id];
@@ -609,31 +550,8 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 		int nbAretesSol = 0;
 
 		/*int val =*/ kruskal_partiel(g, solutionPartielle, /*sorties :*/ aretesSol, &nbAretesSol);
-		/*
-		if(verbose){
-			printf("solution kruskal: %d aretes, val %d\n", nbAretesSol, val);
-			for(int i=0; i< nbAretesSol; i++) {
-				printf("%d %d %d terminal? %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids, aretesSol[i].noeud1->est_terminal, aretesSol[i].noeud2->est_terminal);
-			}
-		}
-		*/
 
-		/*
-		// TODO SUPPRIMER SI USELESS NOW ??
-		//on recupere le noeud max dans les arêtes
-		int noeudmax = 0;
-		for (int i = 0 ; i < nbAretesSol; i++){
-			int noeud1 = aretesSol[i].noeud1->id;
-			int noeud2 = aretesSol[i].noeud2->id;
-			//printf("adding %d and %d to vector\n", noeud1, noeud2);
-			if(noeud1 > noeudmax) noeudmax = noeud1;
-			if(noeud2 > noeudmax) noeudmax = noeud2;
-		}
-		//if(verbose) printf("noeudmax = %d \n", noeudmax);
-		*/
-
-		//on cherche les noeuds actifs dans l'ACPM
-		//int* noeudsactifs = (int)calloc(noeudmax, sizeof(int)); // 1 si le noeud est présent, 0 sinon
+		//on cherche les noeuds actifs dans l'ACPM : 1 si le noeud est présent, 0 sinon
 		//reinitialise noeudsactifs
 		for(int i = 0; i < g->nbNoeuds; i++)
 			noeudsactifs[i] = 0;
@@ -649,13 +567,6 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 		//for (int i = 0 ; i < noeudmax; i++)
 		for(int i =0; i < g->nbNoeuds; i++)
 			if(noeudsactifs[i]) nbnoeudsacpm++;
-
-		/*
-		if(verbose) printf("noeuds actifs ACPM : %d noeuds\n\t", nbnoeudsacpm);
-		for (int i = 0 ; i < noeudmax; i++)
-			if(verbose) printf("%d ",noeudsactifs[i]);
-		if(verbose) puts("");
-		*/
 
 		//maintenant on connait le nombre de noeuds et les noeuds de cet ACPM
 		// fonction qui retourne 1 si le noeud est une feuille (arité 1), 0 sinon
@@ -691,22 +602,7 @@ void generer_population_heuristique_ACPM_one(graphe* g, int* noeudsactifs, const
 		//if(verbose) printf("\tallterm = %d\n", allterm);
 
 		if(allterm) { // si toutes les feuilles sont des noeuds terminaux, retourner l'arbre obtenu (dans population)
-			/* // maintenant on ne fait plus qu'un individu dans cette fonction, retourné dans noeudsactifs
-			for(int i = 0; i < TAILLE_POPULATION * 2; i++){
-				for(int j = 0; j < g->nbNonTerminaux; j++){
-					population[i][j] = noeudsactifs[g->nonTerminaux[j]->id];
-				}
-			}*/
-			/*
-			int coutacpm = 0;
-			printf("aretessol poids :");
-			for (int i = 0 ; i < nbAretesSol; i++){
-				printf("%d ", aretesSol[i].poids);
-				coutacpm += aretesSol[i].poids;
-			}
-			puts("");
-			if(verbose) printf("heuristique ACPM: individu de coût %d. \n", coutacpm);
-			*/
+			// maintenant on ne fait plus qu'un individu dans cette fonction, retourné dans noeudsactifs
 
 			free(solutionPartielle);
 			free(aretesSol);
@@ -815,20 +711,9 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 			for(int k = 0; k < nbAretesSol; k++){
 				aretes[k] = aretesSol[k];
 			}
-			/* //old:
 			// ecriture de l'output
 			if(dest) {
 				tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-				//printf("write solution ..");
-				fprintf(f, "%f\t%d\n", tempscourant, sol);
-			}*/
-			// ecriture de l'output
-			if(dest) {
-				tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-				//printf("write solution ..");
-				//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
-				//printf("\tamélioration trouvée: %f\t%d\n", tempscourant+tempslancement, val);
-
 				//pour writeouput(), 'tempslancement' est toujours 0 dans cette fonction:
 				writeoutput(f, 0, &tempsprecedent, debut, &bestoldval, *valeurSolution, &lastvalwritten, &lasttimewritten);
 			}
@@ -894,8 +779,6 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 					}
 					if(dest) {
 						tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-						//printf("write solution ..");
-						//fprintf(f, "%f\t%d\n", tempscourant, sol);
 						writeoutput(f, 0, &tempsprecedent, debut, &bestoldval, *valeurSolution, &lastvalwritten, &lasttimewritten);
 					}
 				}
@@ -903,16 +786,21 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 		}
 
 
+//		//remplacement elitiste
 		quickSort_pop(population, solutions, 0, TAILLE_POPULATION * 2 - 1);
+
+		//remplacement generationnel
+//		for(int i = 0; i < TAILLE_POPULATION; i++){
+//			for(int j = 0; j < g->nbNonTerminaux; j++){
+//				population[i][j] = population[i+TAILLE_POPULATION][j];
+//			}
+//		}
 
 		gen++;
 
 	}while(maxTime == -1 || (clock() - debut) / (double)CLOCKS_PER_SEC < (double)maxTime);
 
 	printf("fini, lastvalwritten = %d\n", lastvalwritten);
-
-	//pour writeouput(), 'tempslancement' est toujours 0 dans cette fonction:
-	//writeoutput(f, 0, &tempsprecedent, debut, &bestoldval, *valeurSolution, &lastvalwritten, &lasttimewritten);
 
 	//si on a trouvé mieux mais qu'on l'a pas encore écrit on le rajoute avant de fermer le fichier
 	if(dest/* && *valeurSolution <= lastvalwritten*/) {
@@ -921,9 +809,7 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 		// si on a raté des étapes on remplit avec la dernière meilleure valeur
 		int pas = 1;
 		if( ((int)tempscourant) - (int)(lasttimewritten + pas) > 0) {
-			//printf("tempscourant = %d,  tempsprecedent=%d, il faut rattraper.\n", (int)tempscourant, (int)*tempsprecedent);
-			double variation = tempscourant - (lasttimewritten + pas );
-			//printf("variation: %d seconde(s) à rattraper\n", (int)variation);
+			//double variation = tempscourant - (lasttimewritten + pas );
 			for(int i = (int)lasttimewritten+pas; i < (int)(tempscourant ); i++) {
 				printf("write %d \t %d\n", i, *valeurSolution);
 				fprintf(f, "%d \t %d\n", i, *valeurSolution);
@@ -1058,17 +944,14 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 	for(int i = 0; i < g->nbAretes; i++){
 		poids_origines[i] = g->aretes[i].poids;
 	}
-	//printpoidsaretes(g);
 
 	//modification aleatoire de g
 	// printf(">>> %f\n", generer_uniforme(-alea, alea));
 	for(int k = 0; k < g->nbAretes; k++){
 		g->aretes[k].poids = poids_origines[k] + poids_origines[k] * generer_uniforme(-alea, alea);
 	}
-	//printpoidsaretes(g);
-	// génération d'un individu depuis g
 
-	//heuristique
+	// génération d'individus depuis g
 	if(heuristique == 1) {
 		double p = generer_uniforme(0.2,0.5);
 		for(int j = 0; j < g->nbNonTerminaux; j++){
@@ -1087,19 +970,8 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 	for(int i = 0; i < g->nbAretes; i++){
 		g->aretes[i].poids = poids_origines[i];
 	}
-	////////////////////////////////
-
 
 	convertfulltopartiellesolution(g, solutionfull, individu);
-/*
-	printf("solution initiale: ");
-	for(int i = 0; i < g->nbNonTerminaux; i++)
-		printf("%d ", individu[i]);
-	puts("");
-
-*/
-	//convertpartielletofullsolution(g, individu, solutionfull);
-	//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 
 	// pour avoir l'arbre de steiner on applique kruskal sur l'individu
 	arete* aretesSol = (arete*) calloc(g->nbAretes, sizeof(arete));
@@ -1115,25 +987,14 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 	}
 	//fin return de base
 
+	// ecriture dans le fichier
 	int bestoldval = 0;
-
-	// ecriture de l'output
 	if(dest && (val < bestsol)) {
 		bestoldval = bestsol;
 		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-		//printf("write solution .. ");
-		//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
 		*valeurSolution = val;
 		writeoutput(f, tempslancement, &tempsprecedent, debut, &bestoldval, *valeurSolution, lastvalwritten, lasttimewritten);
 	}
-
-/*
-	printf("cet individu donne une solution de %d aretes et de coût %d:\n", nbAretesSol, val);
-	for(int i = 0; i < nbAretesSol; i++) {
-		printf("\t%d %d %d\n", aretesSol[i].noeud1->id+1, aretesSol[i].noeud2->id+1, aretesSol[i].poids);
-	}
-	puts("");
-*/
 
 	int ameliore = 1; // bool
 	int gen = 0;
@@ -1176,18 +1037,12 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 					if(valarete) cptaretes++;
 				}
 
-				//printf("le sommet %d possède %d aretes avec {S}U{T}\n", idcourant+1, cptaretes);
-			//	printtabint(newindividu, g->nbNonTerminaux);
 				//si tests OK, on lance kruskal pour avoir l'ACPM
 				if(cptaretes >= 2) {
-
-//					printf("test d'insertion de l'arete %d\n", idcourant+1);
 					convertpartielletofullsolution(g, newindividu, solutionfull);
-					//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 					val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 					//printf("kruskal : %d\n", val);
 					if(val < *valeurSolution) { // amélioration locale
-						//if(verbose && val < bestsol) printf("\tAmelioration trouvee (par insertion de l'arête %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 						//if(verbose && val < bestsol) printf("\tAmelioration trouvee de valeur %d.\n", val);
 						nbAretesSol = nbAretesSol;
 						*valeurSolution = val;
@@ -1202,9 +1057,6 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 						if(dest && val < bestsol) { // amélioration globale
 							bestoldval = bestsol;
 							tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-							//printf("write solution ..");
-							//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
-							//printf("\tamélioration trouvée: %f\t%d\n", tempscourant+tempslancement, val);
 							writeoutput(f, tempslancement, &tempsprecedent, debut, &bestoldval, *valeurSolution, lastvalwritten, lasttimewritten);
 							bestsol = val;
 						}
@@ -1214,15 +1066,13 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 		}
 		// tester les solutions par élimination
 		for(int i = 0; i < g->nbNonTerminaux && !ameliore; i++) {
-			//printf("individu : "); printtabint(individu, g->nbNonTerminaux);
 			copieIndividu(g, individu, newindividu); // copie individu dans newindividu
+
 			if(individu[i] == 1) { //si le noeud est actif on tente de l'éliminer
 				newindividu[i] = 0;
-				//int idcourant = g->nonTerminaux[i]->id;
-				//printf("test d'élimination de l'arete %d\n", idcourant+1);
 				convertpartielletofullsolution(g, newindividu, solutionfull);
-				//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 				val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
+
 				if(val < *valeurSolution) { // amélioration locale
 					//if(verbose) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 					nbAretesSol = nbAretesSol;
@@ -1239,8 +1089,6 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 					if(dest && val < bestsol) { // amélioration globale
 						bestoldval = bestsol;
 						tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-						//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val); // écrit chaque amélioration
-						//printf("\tamélioration trouvée: %f\t%d\n", tempscourant+tempslancement, val);
 						writeoutput(f, tempslancement, &tempsprecedent, debut, &bestoldval, *valeurSolution, lastvalwritten, lasttimewritten);
 						bestsol = val;
 					}

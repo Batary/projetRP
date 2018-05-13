@@ -10,10 +10,11 @@
 	"types.h"
 	"utils.h"
 
-1526157075 source:/home/baptiste/Documents/Travail/projetRP/Code/inout.c
+1526219152 source:/home/baptiste/Documents/Travail/projetRP/Code/inout.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	<time.h>
 	"types.h"
 
 1526157075 /home/baptiste/Documents/Travail/projetRP/Code/types.h
@@ -81,7 +82,7 @@
 	"types.h"
 	"utils.h"
 
-1526216347 /home/baptiste/Documents/Travail/projetRP/Code/utils.h
+1526229953 /home/baptiste/Documents/Travail/projetRP/Code/utils.h
 
 1526157075 source:/home/baptiste/Documents/Travail/projetRP/Code/utils.c
 	<stdio.h>
