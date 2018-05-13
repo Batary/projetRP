@@ -1117,8 +1117,8 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 	int bestoldval = 0;
 
 	// ecriture de l'output
-	if(dest && (val < bestsol || val < *valeurSolution)) {
-		bestoldval = *valeurSolution;
+	if(dest && (val < bestsol)) {
+		bestoldval = bestsol;
 		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
 		//printf("write solution .. ");
 		//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
@@ -1185,7 +1185,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 					//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 					val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
 					//printf("kruskal : %d\n", val);
-					if(val < *valeurSolution) {
+					if(val < *valeurSolution) { // amélioration locale
 						//if(verbose && val < bestsol) printf("\tAmelioration trouvee (par insertion de l'arête %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 						//if(verbose && val < bestsol) printf("\tAmelioration trouvee de valeur %d.\n", val);
 						nbAretesSol = nbAretesSol;
@@ -1198,7 +1198,8 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 						ameliore = 1;
 						copieIndividu(g, newindividu, individu); //copie newindividu dans individu
 						// ecriture de l'output
-						if(dest && val < bestsol) {
+						if(dest && val < bestsol) { // amélioration globale
+							bestoldval = bestsol;
 							tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
 							//printf("write solution ..");
 							//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
@@ -1221,8 +1222,8 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 				convertpartielletofullsolution(g, newindividu, solutionfull);
 				//printf("solutionfull : "); printtabint(solutionfull, g->nbNoeuds);
 				val = kruskal_partiel(g, solutionfull, /*sorties :*/ aretesSol, &nbAretesSol);
-				if(val < *valeurSolution) {
-					//if(verbose && val < bestsol) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
+				if(val < *valeurSolution) { // amélioration locale
+					//if(verbose) printf("\tAmelioration trouvee (par elimination de l'arete %d) \n\t\tde valeur %d (amélioration n°%d).\n", idcourant+1, val, gen);
 					nbAretesSol = nbAretesSol;
 					*valeurSolution = val;
 					*nbAretes = nbAretesSol;
@@ -1234,7 +1235,8 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 
 					copieIndividu(g, newindividu, individu); //copie newindividu dans individu
 					// ecriture de l'output
-					if(dest && val < bestsol) {
+					if(dest && val < bestsol) { // amélioration globale
+						bestoldval = bestsol;
 						tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
 						//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val); // écrit chaque amélioration
 						//printf("\tamélioration trouvée: %f\t%d\n", tempscourant+tempslancement, val);
@@ -1253,33 +1255,40 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 	free(poids_origines);
 }
 // écrit l'output en mode 'pas de temps' et complète si il manque des données (en mode histograme cumulé)
-void writeoutput(FILE* f, double tempslancement, double* tempsprecedent, double debut, int* oldbestval, int newbestval, int* lastvalwritten, int* lasttimewritten) {
-	//remarque : on utilise +tempslancement que lors d'écrire
-	double tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
+void writeoutput(FILE* f, double tempslancement, double* tempsprecedent, double debut, 
+	int* oldbestval, int newbestval, int* lastvalwritten, int* lasttimewritten) {
+	double tempscourant = ((clock() - debut) / (double)CLOCKS_PER_SEC) + tempslancement;
 	int pas = 1; // 1 = 1 seconde //todo: passer en double pour permettre des pas de 0.5 par exemple ?
 	//printf("if( %f >= (int)(%f + %d) ) ? --> ", tempscourant, *tempsprecedent, pas);
+	//printf("if( %f >= (int)(%d + %d) ) ? --> ", tempscourant, *lasttimewritten, pas);
 	// TODO :si on veut un pas en double: tronquer avec le modulo avec le pas de temps au lieu de caster en int
 
 	// on test si il est temps d'écrire
-	if(((int)tempscourant) >= (int)(*tempsprecedent + pas) || *lastvalwritten == -1) {  // *lastvalwritten == -1 -> force 1ere ecriture
+	//if(((int)tempscourant) >= (int)(*tempsprecedent + pas) || *lastvalwritten == -1) {  // *lastvalwritten == -1 -> force 1ere ecriture
+	if(((int)tempscourant) >= (int)(*lasttimewritten + pas) || *lastvalwritten == -1) {  // *lastvalwritten == -1 -> force 1ere ecriture
 		//printf(" *OUI* \n");
 		// si on à raté des étapes on remplit avec la dernière meilleure valeur
-		if( ((int)tempscourant) - (int)(*tempsprecedent + pas) > 0) {
+		//if( ((int)tempscourant) - (int)(*tempsprecedent + pas) > 0) {
+		if( ((int)tempscourant) - (int)(*lasttimewritten + pas) > 0) {
 			//printf("tempscourant = %d,  tempsprecedent=%d, il faut rattraper.\n", (int)tempscourant, (int)*tempsprecedent);
-			double variation = tempscourant - (*tempsprecedent + pas );
+			//double variation = tempscourant - (*tempsprecedent + pas );
+			double variation = tempscourant - (*lasttimewritten + pas );
 			//printf("variation: %d seconde(s) à rattraper\n", (int)variation);
-			for(int i = (int)*tempsprecedent + pas; i <= (int)(tempscourant - pas /*+ 1*/); i+=pas) {
-				printf("write %d \t %d\n", (int)(i+tempslancement), *oldbestval);
-				fprintf(f, "%d \t %d\n", (int)(i+tempslancement), *oldbestval);
+			//for(int i = (int)*tempsprecedent + pas; i <= (int)(tempscourant - pas /*+ 1*/); i+=pas) {
+			for(int i = (int)*lasttimewritten + pas; i <= (int)(tempscourant - pas /*+ 1*/); i+=pas) {
+				//printf("write %d \t %d\n", (int)(i+tempslancement), *oldbestval);
+				//fprintf(f, "%d \t %d\n", (int)(i+tempslancement), *oldbestval);
+				printf("write %d \t %d\n", (int)(i), *oldbestval);
+				fprintf(f, "%d \t %d\n", (int)(i), *oldbestval);
 			}
 		}
 		// puis on ecrit la nouvelle meilleure valeur
-		fprintf(f, "%d \t %d\n", (int)(tempscourant+tempslancement), newbestval);
-		printf("write %d \t %d\n", (int)(tempscourant+tempslancement), newbestval);
+		fprintf(f, "%d \t %d\n", (int)(tempscourant), newbestval);
+		printf("write %d \t %d\n", (int)(tempscourant), newbestval);
 		*tempsprecedent = (int)tempscourant;
-		*oldbestval = newbestval;
+		*oldbestval = newbestval; 
 		*lastvalwritten = newbestval;
-		*lasttimewritten = (int)(tempscourant+tempslancement);
+		*lasttimewritten = (int)(tempscourant);
 	} //else printf(" NON \n");
 	//sinon on ecrit rien
 }
