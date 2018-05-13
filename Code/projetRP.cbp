@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-time 10 -file ../Instances/B/b01.stp -gene  -verbose -print" />
+				<Option parameters="-time 10 -file ../Instances/B/b18.stp -gene  -verbose -out ../Output/ -local" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -21,6 +21,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="-time 10 -file ../Instances/B/b06.stp -gene  -verbose -print -out ../Output/" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -44,6 +45,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="types.h" />
+		<Unit filename="utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="utils.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

@@ -734,6 +734,7 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 		    printf("Error opening file \"%s\"\n", fullfilename);
 		    exit(1);
 		} else printf("opening %s\n", fullfilename);
+		free(fullfilename);
 	}
 	//pour output écriture
 	int lastvalwritten = -1; //force premiere ecriture
@@ -826,6 +827,7 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 				//printf("write solution ..");
 				//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
 				//printf("\tamélioration trouvée: %f\t%d\n", tempscourant+tempslancement, val);
+
 				//pour writeouput(), 'tempslancement' est toujours 0 dans cette fonction:
 				writeoutput(f, 0, &tempsprecedent, debut, &bestoldval, *valeurSolution, &lastvalwritten, &lasttimewritten);
 			}
@@ -907,25 +909,30 @@ void noeuds_steiner_gene(graphe* g, int heuristique, String dest,String filename
 	}while(maxTime == -1 || (clock() - debut) / (double)CLOCKS_PER_SEC < (double)maxTime);
 
 	printf("fini, lastvalwritten = %d\n", lastvalwritten);
-	//si on a trouvé mieux mais qu'on la pas encore écrit on le rajoute avant de fermer le fichier
-	if(dest && *valeurSolution < lastvalwritten) {
+
+	//pour writeouput(), 'tempslancement' est toujours 0 dans cette fonction:
+	//writeoutput(f, 0, &tempsprecedent, debut, &bestoldval, *valeurSolution, &lastvalwritten, &lasttimewritten);
+
+	//si on a trouvé mieux mais qu'on l'a pas encore écrit on le rajoute avant de fermer le fichier
+	if(dest/* && *valeurSolution <= lastvalwritten*/) {
 		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-		
-		// si on a raté des étapes on rempli avec la dernière meilleure valeur
+
+		// si on a raté des étapes on remplit avec la dernière meilleure valeur
 		int pas = 1;
 		if( ((int)tempscourant) - (int)(lasttimewritten + pas) > 0) {
 			//printf("tempscourant = %d,  tempsprecedent=%d, il faut rattraper.\n", (int)tempscourant, (int)*tempsprecedent);
 			double variation = tempscourant - (lasttimewritten + pas );
 			//printf("variation: %d seconde(s) à rattraper\n", (int)variation);
-			for(int i = (int)lasttimewritten+1; i < (int)(tempscourant ); i++) {
-				printf("write %d\t%d\n", i, *valeurSolution);
-				fprintf(f, "%d\t%d\n", i, *valeurSolution);
+			for(int i = (int)lasttimewritten+pas; i < (int)(tempscourant ); i++) {
+				printf("write %d \t %d\n", i, *valeurSolution);
+				fprintf(f, "%d \t %d\n", i, *valeurSolution);
 			}
 		}
 
 		//printf("write solution ..");
-		fprintf(f, "%d\t%d\n", (int)tempscourant, *valeurSolution);
-		printf("write %d\t%d\n", (int)(tempscourant), *valeurSolution);
+		fprintf(f, "%d \t %d\n", (int)tempscourant, *valeurSolution);
+		printf("write %d \t %d\n", (int)(tempscourant), *valeurSolution);
+
 		fclose(f);
 	}
 
@@ -1006,7 +1013,7 @@ void noeuds_steiner_local(graphe* g, int heuristique, String dest, String filena
 	//si on à trouvé mieux mais qu'on la pas encore écrit on le rajoute avant de fermer le fichier
 	if(dest && *valeurSolution < lastvalwritten) {
 		tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
-		
+
 		// si on à raté des étapes on rempli avec la dernière meilleure valeur
 		int pas = 1;
 		if( ((int)tempscourant) - (int)(lasttimewritten + pas) > 0) {
@@ -1116,7 +1123,7 @@ void noeuds_steiner_local_one(graphe* g, int heuristique, String dest, String fi
 		//printf("write solution .. ");
 		//fprintf(f, "%f\t%d\n", tempscourant+tempslancement, val);
 		*valeurSolution = val;
-		writeoutput(f, tempslancement, &tempsprecedent, debut, &bestoldval, *valeurSolution, lastvalwritten, lasttimewritten);			
+		writeoutput(f, tempslancement, &tempsprecedent, debut, &bestoldval, *valeurSolution, lastvalwritten, lasttimewritten);
 	}
 
 /*
@@ -1251,24 +1258,24 @@ void writeoutput(FILE* f, double tempslancement, double* tempsprecedent, double 
 	double tempscourant = (clock() - debut) / (double)CLOCKS_PER_SEC;
 	int pas = 1; // 1 = 1 seconde //todo: passer en double pour permettre des pas de 0.5 par exemple ?
 	//printf("if( %f >= (int)(%f + %d) ) ? --> ", tempscourant, *tempsprecedent, pas);
-	// TODO :si on veut un pas en double: tronquer avec le modulo avec le pas de temps au lieu de caster en int 
+	// TODO :si on veut un pas en double: tronquer avec le modulo avec le pas de temps au lieu de caster en int
 
 	// on test si il est temps d'écrire
 	if(((int)tempscourant) >= (int)(*tempsprecedent + pas) || *lastvalwritten == -1) {  // *lastvalwritten == -1 -> force 1ere ecriture
 		//printf(" *OUI* \n");
-		// si on à raté des étapes on rempli avec la dernière meilleure valeur
+		// si on à raté des étapes on remplit avec la dernière meilleure valeur
 		if( ((int)tempscourant) - (int)(*tempsprecedent + pas) > 0) {
 			//printf("tempscourant = %d,  tempsprecedent=%d, il faut rattraper.\n", (int)tempscourant, (int)*tempsprecedent);
 			double variation = tempscourant - (*tempsprecedent + pas );
 			//printf("variation: %d seconde(s) à rattraper\n", (int)variation);
-			for(int i = (int)*tempsprecedent+1; i < (int)(*tempsprecedent + pas + 1); i++) {
-				printf("write %d\t%d\n", (int)(i+tempslancement), *oldbestval);
-				fprintf(f, "%d\t%d\n", (int)(i+tempslancement), *oldbestval);
+			for(int i = (int)*tempsprecedent + pas; i <= (int)(tempscourant - pas /*+ 1*/); i+=pas) {
+				printf("write %d \t %d\n", (int)(i+tempslancement), *oldbestval);
+				fprintf(f, "%d \t %d\n", (int)(i+tempslancement), *oldbestval);
 			}
 		}
 		// puis on ecrit la nouvelle meilleure valeur
-		fprintf(f, "%d\t%d\n", (int)(tempscourant+tempslancement), newbestval);
-		printf("write %d\t%d\n", (int)(tempscourant+tempslancement), newbestval); 
+		fprintf(f, "%d \t %d\n", (int)(tempscourant+tempslancement), newbestval);
+		printf("write %d \t %d\n", (int)(tempscourant+tempslancement), newbestval);
 		*tempsprecedent = (int)tempscourant;
 		*oldbestval = newbestval;
 		*lastvalwritten = newbestval;

@@ -10,22 +10,26 @@
 	"types.h"
 	"utils.h"
 
-1525270530 source:/home/baptiste/Documents/Travail/projetRP/Code/inout.c
+1526157075 source:/home/baptiste/Documents/Travail/projetRP/Code/inout.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"types.h"
 
-1525465194 /home/baptiste/Documents/Travail/projetRP/Code/types.h
+1526157075 /home/baptiste/Documents/Travail/projetRP/Code/types.h
 
-1525770678 source:/home/baptiste/Documents/Travail/projetRP/Code/main.c
+1526168223 source:/home/baptiste/Documents/Travail/projetRP/Code/main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<time.h>
+	<dirent.h>
+	<libgen.h>
 	"inout.h"
 	"graphe.h"
 	"types.h"
+	"utils.h"
+	<errno.h>
 
 1524926167 /home/baptiste/Documents/Travail/projetRP/Code/inout.h
 	"types.h"
@@ -41,14 +45,17 @@
 1525353640 /home/baptiste/Documents/C/projetRP/Code/inout.h
 	"types.h"
 
-1525786642 source:/home/baptiste/Documents/Travail/projetRP/Code/graphe.c
+1526169220 source:/home/baptiste/Documents/Travail/projetRP/Code/graphe.c
 	<stdio.h>
 	<stdlib.h>
 	<limits.h>
 	<time.h>
+	<string.h>
 	"types.h"
+	"graphe.h"
+	"utils.h"
 
-1525015181 /home/baptiste/Documents/Travail/projetRP/Code/graphe.h
+1526159334 /home/baptiste/Documents/Travail/projetRP/Code/graphe.h
 	"types.h"
 
 1526136862 source:/home/baptiste/Documents/C/projetRP/Code/graphe.c
@@ -66,6 +73,16 @@
 1526136916 /home/baptiste/Documents/C/projetRP/Code/utils.h
 
 1526136885 source:/home/baptiste/Documents/C/projetRP/Code/utils.c
+	<stdio.h>
+	<stdlib.h>
+	<limits.h>
+	"graphe.h"
+	"types.h"
+	"utils.h"
+
+1526157075 /home/baptiste/Documents/Travail/projetRP/Code/utils.h
+
+1526157075 source:/home/baptiste/Documents/Travail/projetRP/Code/utils.c
 	<stdio.h>
 	<stdlib.h>
 	<limits.h>

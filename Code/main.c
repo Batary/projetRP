@@ -84,6 +84,7 @@ void analysefichier(int print, int verbose, int heuristique, int maxtime, String
         }
     }
 
+	free(filename);
     free(solution);
     freeGraphe(g);
 }
@@ -117,9 +118,11 @@ int main(int argc, const char *argv[])
 			dest = (String)malloc((strlen(argv[i+1]) + 1) * sizeof(char));
             strcpy(dest, argv[i+1]);
 
-            if(opendir(dest)) {} else if (ENOENT == errno){
+			DIR *dtest;
+            if( (dtest = opendir(dest)) ) {closedir(dtest);} else if (ENOENT == errno){
                 /* Directory does not exist. */
                 printf("error: output directory does not exist.\n");
+                closedir(dtest);
                 return EXIT_FAILURE;
             }
 
@@ -172,6 +175,7 @@ int main(int argc, const char *argv[])
     }
     else analysefichier(print, verbose, heuristique, maxtime, source, dest, local, gene);
 
+	free(dest);
     free(source);
 
     puts("Programme termine avec succes. \n");
